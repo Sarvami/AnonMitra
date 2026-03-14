@@ -36,16 +36,3 @@ def login(data: LoginInput, db: Session = Depends(get_db)):
 @router.get("/me")
 def me(current_user=Depends(get_current_user)):
     return {"id": current_user.id, "email": current_user.email}
-```
-
----
-
-Now create empty placeholder files so your teammates can start adding their code without waiting:
-```
-backend/routers/identities.py  → Madiha fills this
-backend/routers/messages.py    → Madiha fills this
-backend/routers/detector.py    → Shravs + Shravani fill this
-backend/routers/analytics.py   → Shravani fills this
-backend/utils/identity_gen.py  → Madiha fills this
-backend/ml/spam_classifier.py  → Shravs fills this
-backend/ml/ai_detector.py      → Shravs fills this
