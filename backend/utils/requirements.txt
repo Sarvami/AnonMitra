@@ -8,3 +8,4 @@ pydantic
 python-multipart
 python-dotenv
 slowapi
+python-dotenv
