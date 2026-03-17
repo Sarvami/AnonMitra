@@ -8,7 +8,11 @@ pydantic
 python-multipart
 python-dotenv
 slowapi
+<<<<<<< HEAD
 <<<<<<< HEAD:backend/utils/requirements.txt
 =======
 python-dotenv
 >>>>>>> origin/main:backend/requirements.txt
+=======
+python-dotenv
+>>>>>>> origin/main
