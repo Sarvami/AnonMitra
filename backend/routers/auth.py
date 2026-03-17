@@ -5,19 +5,22 @@ from sqlalchemy.orm import Session
 from database import get_db
 from auth import hash_password, verify_password, create_access_token, get_current_user
 import models
-from pydantic import BaseModel, EmailStr
-
+from pydantic import BaseModel
+ 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter()
-
+ 
+ 
 class RegisterInput(BaseModel):
     email: str
     password: str
-
+ 
+ 
 class LoginInput(BaseModel):
     email: str
     password: str
-
+ 
+ 
 @router.post("/register")
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterInput, db: Session = Depends(get_db)):
@@ -32,7 +35,8 @@ def register(request: Request, data: RegisterInput, db: Session = Depends(get_db
     db.add(user)
     db.commit()
     return {"message": "Account created successfully"}
-
+ 
+ 
 @router.post("/login")
 @limiter.limit("10/minute")
 def login(request: Request, data: LoginInput, db: Session = Depends(get_db)):
@@ -41,7 +45,9 @@ def login(request: Request, data: LoginInput, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token({"sub": user.id})
     return {"access_token": token, "token_type": "bearer"}
-
+ 
+ 
 @router.get("/me")
 def me(current_user=Depends(get_current_user)):
     return {"id": current_user.id, "email": current_user.email}
+ 
