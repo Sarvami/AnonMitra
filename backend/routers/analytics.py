@@ -3,10 +3,7 @@ from ml.spam_simulator import run_simulation
 
 router = APIRouter()
 
-# Store simulation results in memory for demo
-_simulation_cache = []
-
-@router.get("/analytics/summary")
+@router.get("/summary")
 def get_summary():
     results = run_simulation(20)
     
@@ -38,7 +35,7 @@ def get_summary():
         "top_spam_keywords": top_keywords_sorted
     }
 
-@router.get("/analytics/simulate")
+@router.get("/simulate")
 def simulate_messages(count: int = 10):
     results = run_simulation(count)
     return {
