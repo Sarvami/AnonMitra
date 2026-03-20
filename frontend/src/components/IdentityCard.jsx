@@ -1,9 +1,11 @@
 import RiskBadge from './RiskBadge'
 import { deleteIdentity } from '../api/identities'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '../ThemeContext'
 
 export default function IdentityCard({ identity, onDelete }) {
   const navigate = useNavigate()
+  const { theme } = useTheme()
 
   const handleDelete = async () => {
     try {
@@ -16,8 +18,8 @@ export default function IdentityCard({ identity, onDelete }) {
 
   return (
     <div style={{
-      background: '#1e1e2e',
-      border: '1px solid #313244',
+      background: theme.card,
+      border: `1px solid ${theme.border}`,
       borderRadius: '10px',
       padding: '16px 20px',
       display: 'flex',
@@ -26,10 +28,36 @@ export default function IdentityCard({ identity, onDelete }) {
     }}>
       {/* Top row — username + quick buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: '#cdd6f4', fontWeight: '700' }}>{identity.username}</span>
+        <span style={{ color: theme.text, fontWeight: '700' }}>{identity.username}</span>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button onClick={() => navigate('/inbox')} style={iconBtnStyle} title="Inbox">📬</button>
-          <button onClick={() => navigate('/analytics')} style={iconBtnStyle} title="Analytics">📊</button>
+          <button
+            onClick={() => navigate('/inbox')}
+            style={{
+              background: theme.input,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
+              padding: '4px 8px',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+            }}
+            title="Inbox"
+          >
+            📬
+          </button>
+          <button
+            onClick={() => navigate('/analytics')}
+            style={{
+              background: theme.input,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
+              padding: '4px 8px',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+            }}
+            title="Analytics"
+          >
+            📊
+          </button>
         </div>
       </div>
 
@@ -37,43 +65,32 @@ export default function IdentityCard({ identity, onDelete }) {
       <RiskBadge level={identity.risk_badge} />
 
       {/* Email */}
-      <div style={{ color: '#89b4fa', fontSize: '0.85rem' }}>
+      <div style={{ color: theme.blue, fontSize: '0.85rem' }}>
         📧 {identity.alias_email}
       </div>
 
       {/* Platform */}
-      <div style={{ color: '#a6adc8', fontSize: '0.8rem' }}>
+      <div style={{ color: theme.muted, fontSize: '0.8rem' }}>
         🏷️ {identity.platform}
       </div>
 
       {/* Bottom row — date + delete */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-        <span style={{ color: '#6c7086', fontSize: '0.75rem' }}>
+        <span style={{ color: theme.faint, fontSize: '0.75rem' }}>
           Created: {new Date(identity.created_at).toLocaleDateString()}
         </span>
-        <button onClick={handleDelete} style={deleteBtnStyle}>
+        <button onClick={handleDelete} style={{
+          background: 'transparent',
+          border: `1px solid ${theme.red}`,
+          color: theme.red,
+          borderRadius: '6px',
+          padding: '4px 12px',
+          cursor: 'pointer',
+          fontSize: '0.8rem',
+        }}>
           Delete
         </button>
       </div>
     </div>
   )
-}
-
-const iconBtnStyle = {
-  background: '#313244',
-  border: '1px solid #45475a',
-  borderRadius: '6px',
-  padding: '4px 8px',
-  cursor: 'pointer',
-  fontSize: '0.85rem',
-}
-
-const deleteBtnStyle = {
-  background: 'transparent',
-  border: '1px solid #f38ba8',
-  color: '#f38ba8',
-  borderRadius: '6px',
-  padding: '4px 12px',
-  cursor: 'pointer',
-  fontSize: '0.8rem',
 }

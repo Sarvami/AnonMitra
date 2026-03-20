@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import IdentityCard from '../components/IdentityCard'
 import { getIdentities, generateIdentity } from '../api/identities'
+import { useTheme } from '../ThemeContext'
 
 export default function Dashboard() {
+  const { theme } = useTheme()
   const [identities, setIdentities] = useState([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -41,43 +43,66 @@ export default function Dashboard() {
   }
 
   const safeCount     = identities.filter(i => i.risk_badge === 'safe').length
-const moderateCount = identities.filter(i => i.risk_badge === 'moderate').length
-const highCount     = identities.filter(i => i.risk_badge === 'high').length
+  const moderateCount = identities.filter(i => i.risk_badge === 'moderate').length
+  const highCount     = identities.filter(i => i.risk_badge === 'high').length
+
   return (
-    <div style={{ minHeight: '100vh', background: '#181825', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-      <div style={containerStyle}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px', width: '100%' }}>
+
         {/* Header */}
-        <div style={headerStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
-            <h2 style={headingStyle}>Your Identities</h2>
-            <p style={subStyle}>{identities.length} virtual identities generated</p>
+            <h2 style={{ color: theme.text, fontSize: '1.6rem', fontWeight: '700', margin: 0 }}>Your Identities</h2>
+            <p style={{ color: theme.muted, fontSize: '0.9rem', marginTop: '4px' }}>{identities.length} virtual identities generated</p>
           </div>
-          <button onClick={handleGenerate} disabled={generating} style={genBtnStyle}>
+          <button onClick={handleGenerate} disabled={generating} style={{
+            background: theme.blue,
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '10px 22px',
+            fontWeight: '700',
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+          }}>
             {generating ? '⏳ Generating...' : '+ Generate Identity'}
           </button>
         </div>
 
-        {error && <div style={errorStyle}>{error}</div>}
+        {error && (
+          <div style={{
+            background: theme.red + '20',
+            border: `1px solid ${theme.red}`,
+            color: theme.red,
+            borderRadius: '8px',
+            padding: '10px 16px',
+            marginBottom: '20px',
+            fontSize: '0.85rem',
+          }}>
+            {error}
+          </div>
+        )}
 
         {/* Summary Stats */}
-        <div style={statsRow}>
-          <StatCard label="Total Identities" value={identities.length} color="#89b4fa" />
-          <StatCard label="🟢 Safe"           value={safeCount}         color="#a6e3a1" />
-          <StatCard label="🟡 Moderate"       value={moderateCount}     color="#f9e2af" />
-          <StatCard label="🔴 High Risk"      value={highCount}         color="#f38ba8" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
+          <StatCard label="Total Identities" value={identities.length} color={theme.blue}   theme={theme} />
+          <StatCard label="🟢 Safe"           value={safeCount}         color={theme.green}  theme={theme} />
+          <StatCard label="🟡 Moderate"       value={moderateCount}     color={theme.yellow} theme={theme} />
+          <StatCard label="🔴 High Risk"      value={highCount}         color={theme.red}    theme={theme} />
         </div>
 
         {/* Identity Grid */}
         {loading ? (
-          <p style={loadingStyle}>Loading identities...</p>
+          <p style={{ color: theme.muted, textAlign: 'center', marginTop: '60px' }}>Loading identities...</p>
         ) : identities.length === 0 ? (
-          <div style={emptyStyle}>
+          <div style={{ textAlign: 'center', marginTop: '80px' }}>
             <p style={{ fontSize: '2rem' }}>🕵️</p>
-            <p style={{ color: '#a6adc8' }}>No identities yet. Generate your first one!</p>
+            <p style={{ color: theme.muted }}>No identities yet. Generate your first one!</p>
           </div>
         ) : (
-          <div style={gridStyle}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {identities.map((identity) => (
               <IdentityCard
                 key={identity.id}
@@ -92,90 +117,17 @@ const highCount     = identities.filter(i => i.risk_badge === 'high').length
   )
 }
 
-function StatCard({ label, value, color }) {
+function StatCard({ label, value, color, theme }) {
   return (
-    <div style={statCardStyle}>
+    <div style={{
+      background: theme.card,
+      border: `1px solid ${theme.border}`,
+      borderRadius: '10px',
+      padding: '20px',
+      textAlign: 'center',
+    }}>
       <div style={{ fontSize: '1.8rem', fontWeight: '700', color }}>{value}</div>
-      <div style={{ color: '#a6adc8', fontSize: '0.85rem', marginTop: '4px' }}>{label}</div>
+      <div style={{ color: theme.muted, fontSize: '0.85rem', marginTop: '4px' }}>{label}</div>
     </div>
   )
-}
-
-const containerStyle = {
-  maxWidth: '1100px',
-  margin: '0 auto',
-  padding: '32px 24px',
-}
-
-const headerStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '24px',
-}
-
-const headingStyle = {
-  color: '#cdd6f4',
-  fontSize: '1.6rem',
-  fontWeight: '700',
-  margin: 0,
-}
-
-const subStyle = {
-  color: '#a6adc8',
-  fontSize: '0.9rem',
-  marginTop: '4px',
-}
-
-const genBtnStyle = {
-  background: '#89b4fa',
-  color: '#1e1e2e',
-  border: 'none',
-  borderRadius: '8px',
-  padding: '10px 22px',
-  fontWeight: '700',
-  fontSize: '0.95rem',
-  cursor: 'pointer',
-}
-
-const errorStyle = {
-  background: '#f38ba820',
-  border: '1px solid #f38ba8',
-  color: '#f38ba8',
-  borderRadius: '8px',
-  padding: '10px 16px',
-  marginBottom: '20px',
-  fontSize: '0.85rem',
-}
-
-const statsRow = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(4, 1fr)',
-  gap: '16px',
-  marginBottom: '32px',
-}
-
-const statCardStyle = {
-  background: '#1e1e2e',
-  border: '1px solid #313244',
-  borderRadius: '10px',
-  padding: '20px',
-  textAlign: 'center',
-}
-
-const gridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gap: '16px',
-}
-
-const loadingStyle = {
-  color: '#a6adc8',
-  textAlign: 'center',
-  marginTop: '60px',
-}
-
-const emptyStyle = {
-  textAlign: 'center',
-  marginTop: '80px',
 }
