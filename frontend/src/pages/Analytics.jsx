@@ -21,9 +21,12 @@ export default function Analytics() {
         getSpamByIdentity(),
       ])
       setSummary(summaryRes.data)
-      setSpamData(spamRes.data)
+      // Make sure spamData is always an array
+      const spamResult = spamRes.data
+      setSpamData(Array.isArray(spamResult) ? spamResult : [])
     } catch (err) {
       setError('Failed to load analytics data')
+      setSpamData([]) // make sure it's always an array
     } finally {
       setLoading(false)
     }
