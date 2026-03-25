@@ -16,15 +16,23 @@ export default function Profile() {
   })
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
-
-  useEffect(() => {
-    const stored = localStorage.getItem('userProfile')
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      setProfile(parsed)
-      setForm(parsed)
-    }
-  }, [])
+useEffect(() => {
+  const stored = localStorage.getItem('userProfile')
+  if (stored) {
+    const parsed = JSON.parse(stored)
+    setProfile(parsed)
+    setForm(parsed)
+  } else {
+    // Set empty defaults to avoid uncontrolled input warning
+    setForm({
+      fullName: '',
+      phone: '',
+      dob: '',
+      country: '',
+      email: '',
+    })
+  }
+}, [])
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 

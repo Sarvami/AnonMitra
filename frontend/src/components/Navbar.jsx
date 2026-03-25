@@ -7,8 +7,12 @@ export default function Navbar() {
   const { isDark, toggleTheme, theme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const profile = JSON.parse(localStorage.getItem('userProfile') || '{}')
+  const initial = profile.fullName ? profile.fullName[0].toUpperCase() : '?'
+
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('userProfile')
     navigate('/login')
   }
 
@@ -17,7 +21,6 @@ export default function Navbar() {
     { to: '/inbox',     label: 'Inbox' },
     { to: '/detector',  label: 'AI Detector' },
     { to: '/analytics', label: 'Analytics' },
-    { to: '/profile',   label: 'Profile' },
   ]
 
   return (
@@ -33,72 +36,144 @@ export default function Navbar() {
         zIndex: 100,
       }}>
         {/* Logo */}
-        <span style={{ color: theme.text, fontWeight: '700', fontSize: '1.2rem' }}>
-          🛡️ AnonMitra
-        </span>
+        <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+          <span style={{ color: theme.text, fontWeight: '800', fontSize: '1.2rem', letterSpacing: '-0.5px' }}>
+            🛡️ AnonMitra
+          </span>
+        </Link>
 
         {/* Desktop links */}
         <div className="desktop-only" style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
           {navLinks.map(link => (
             <Link key={link.to} to={link.to} style={{
-              color: theme.blue,
+              color: theme.muted,
               textDecoration: 'none',
-              fontSize: '0.95rem',
+              fontSize: '0.9rem',
               fontWeight: '500',
             }}>
               {link.label}
             </Link>
           ))}
-          <button onClick={toggleTheme} style={{
-            background: theme.input,
-            border: `1px solid ${theme.border}`,
-            borderRadius: '6px',
-            padding: '6px 12px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            color: theme.text,
-          }}>
-            {isDark ? '☀️' : '🌙'}
-          </button>
+        </div>
+
+        {/* Right side */}
+        <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          
+          {/* Theme Slider */}
+          <div
+            onClick={toggleTheme}
+            style={{
+              width: '52px',
+              height: '28px',
+              background: isDark ? theme.blue : '#e2e8f0',
+              borderRadius: '99px',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'background 0.3s ease',
+              flexShrink: 0,
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: '4px',
+              left: isDark ? '28px' : '4px',
+              width: '20px',
+              height: '20px',
+              background: '#fff',
+              borderRadius: '50%',
+              transition: 'left 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+            }}>
+              {isDark ? '🌙' : '☀️'}
+            </div>
+          </div>
+
+          {/* Profile Avatar */}
+          <div
+            onClick={() => navigate('/profile')}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: theme.blue + '30',
+              border: `2px solid ${theme.blue}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontWeight: '700',
+              fontSize: '0.9rem',
+              color: theme.blue,
+              flexShrink: 0,
+            }}
+            title="Profile"
+          >
+            {initial}
+          </div>
+
+          {/* Logout */}
           <button onClick={logout} style={{
-            background: theme.red,
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
+            background: theme.red + '20',
+            color: theme.red,
+            border: `1px solid ${theme.red}`,
+            borderRadius: '8px',
             padding: '6px 16px',
             cursor: 'pointer',
             fontWeight: '600',
+            fontSize: '0.85rem',
           }}>
             Logout
           </button>
         </div>
 
-        {/* Mobile hamburger */}
-        <div className="mobile-only" style={{
-          display: 'none',
-          alignItems: 'center',
-          gap: '12px',
-        }}>
-          <button onClick={toggleTheme} style={{
-            background: theme.input,
-            border: `1px solid ${theme.border}`,
-            borderRadius: '6px',
-            padding: '6px 10px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-          }}>
-            {isDark ? '☀️' : '🌙'}
-          </button>
+        {/* Mobile right */}
+        <div className="mobile-only" style={{ display: 'none', alignItems: 'center', gap: '10px' }}>
+          <div
+            onClick={toggleTheme}
+            style={{
+              width: '44px', height: '24px',
+              background: isDark ? theme.blue : '#e2e8f0',
+              borderRadius: '99px', cursor: 'pointer',
+              position: 'relative', transition: 'background 0.3s ease',
+            }}
+          >
+            <div style={{
+              position: 'absolute', top: '3px',
+              left: isDark ? '22px' : '3px',
+              width: '18px', height: '18px',
+              background: '#fff', borderRadius: '50%',
+              transition: 'left 0.3s ease',
+              display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: '10px',
+            }}>
+              {isDark ? '🌙' : '☀️'}
+            </div>
+          </div>
+          <div
+            onClick={() => navigate('/profile')}
+            style={{
+              width: '32px', height: '32px',
+              borderRadius: '50%',
+              background: theme.blue + '30',
+              border: `2px solid ${theme.blue}`,
+              display: 'flex', alignItems: 'center',
+              justifyContent: 'center', cursor: 'pointer',
+              fontWeight: '700', fontSize: '0.85rem',
+              color: theme.blue,
+            }}
+          >
+            {initial}
+          </div>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             style={{
               background: 'transparent',
               border: `1px solid ${theme.border}`,
-              borderRadius: '6px',
-              padding: '6px 10px',
-              cursor: 'pointer',
-              color: theme.text,
-              fontSize: '1.2rem',
+              borderRadius: '6px', padding: '6px 10px',
+              cursor: 'pointer', color: theme.text, fontSize: '1.2rem',
             }}
           >
             {menuOpen ? '✕' : '☰'}
@@ -106,27 +181,21 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile menu */}
       {menuOpen && (
         <div className="mobile-only" style={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: 'flex', flexDirection: 'column',
           background: theme.card,
           borderBottom: `1px solid ${theme.border}`,
-          padding: '12px 24px',
-          gap: '4px',
-          zIndex: 99,
+          padding: '12px 24px', gap: '4px', zIndex: 99,
         }}>
           {navLinks.map(link => (
             <Link
-              key={link.to}
-              to={link.to}
+              key={link.to} to={link.to}
               onClick={() => setMenuOpen(false)}
               style={{
-                color: theme.blue,
-                textDecoration: 'none',
-                fontSize: '0.95rem',
-                fontWeight: '500',
+                color: theme.blue, textDecoration: 'none',
+                fontSize: '0.95rem', fontWeight: '500',
                 padding: '10px 0',
                 borderBottom: `1px solid ${theme.border}`,
               }}
@@ -134,19 +203,24 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <button
-            onClick={logout}
+          <Link
+            to="/profile"
+            onClick={() => setMenuOpen(false)}
             style={{
-              background: theme.red,
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '10px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              marginTop: '8px',
+              color: theme.blue, textDecoration: 'none',
+              fontSize: '0.95rem', fontWeight: '500',
+              padding: '10px 0',
+              borderBottom: `1px solid ${theme.border}`,
             }}
           >
+            Profile
+          </Link>
+          <button onClick={logout} style={{
+            background: theme.red, color: '#fff',
+            border: 'none', borderRadius: '6px',
+            padding: '10px', cursor: 'pointer',
+            fontWeight: '600', marginTop: '8px',
+          }}>
             Logout
           </button>
         </div>
