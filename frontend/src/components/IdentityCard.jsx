@@ -8,14 +8,15 @@ export default function IdentityCard({ identity, onDelete }) {
   const { theme } = useTheme()
 
   const handleDelete = async () => {
-    try {
-      await deleteIdentity(identity.id)
-      onDelete(identity.id)
-    } catch (err) {
-      alert('Failed to delete identity')
-    }
+  const confirmed = window.confirm('Are you sure you want to delete this identity? This action cannot be undone.')
+  if (!confirmed) return
+  try {
+    await deleteIdentity(identity.id)
+    onDelete(identity.id)
+  } catch (err) {
+    alert('Failed to delete identity')
   }
-
+}
   return (
     <div style={{
       background: theme.card,
