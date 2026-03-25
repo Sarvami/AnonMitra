@@ -139,8 +139,7 @@ function StatCard({ label, value, color, theme }) {
       <div style={{ color: theme.muted, fontSize: '0.85rem', marginTop: '4px' }}>{label}</div>
     </div>
   )
-}
-return (
+  return (
   <PageWrapper>
     <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
       <Navbar />
@@ -149,3 +148,5 @@ return (
     </div>
   </PageWrapper>
 )
+}
+

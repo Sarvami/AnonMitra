@@ -4,7 +4,7 @@ import MessageCard from '../components/MessageCard'
 import { getIdentities } from '../api/identities'
 import { getMessages } from '../api/messages'
 import { useTheme } from '../ThemeContext'
-
+import PageWrapper from '../components/PageWrapper'
 export default function Inbox() {
   const { theme } = useTheme()
   const [identities, setIdentities] = useState([])
@@ -138,9 +138,7 @@ export default function Inbox() {
       </div>
     </div>
   )
-}
-import PageWrapper from '../components/PageWrapper'
-
+  
 return (
   <PageWrapper>
     <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
@@ -148,3 +146,5 @@ return (
     </div>
   </PageWrapper>
 )
+}
+
