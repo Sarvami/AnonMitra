@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnonMitra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Login Screen -->
+    <div id="screen-login" class="screen active">
+      <div class="login-header">
+        <div class="logo-mark">🛡️</div>
+        <h1 class="logo-text">AnonMitra</h1>
+        <p class="logo-sub">Your anonymous identity shield</p>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter username" autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password"/>
+      </div>
+      <button class="btn-primary" id="btn-login">Sign In</button>
+      <div id="login-error" class="error-msg hidden"></div>
+      <a class="open-webapp-link" id="link-register" href="#">New user? Open web app →</a>
+    </div>
+
+    <!-- Main Shell (shown after login) -->
+    <div id="screen-main" class="screen hidden">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <div class="topbar-brand">
+          <span class="topbar-icon">🛡️</span>
+          <span class="topbar-title">AnonMitra</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="btn-theme" title="Toggle theme">☀️</button>
+          <button class="icon-btn" id="btn-logout" title="Logout">⏏</button>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="tabbar">
+        <button class="tab active" data-tab="identity">
+          <span class="tab-icon">🪪</span>
+          <span>Identity</span>
+        </button>
+        <button class="tab" data-tab="inbox">
+          <span class="tab-icon">📬</span>
+          <span>Inbox</span>
+        </button>
+        <button class="tab" data-tab="detector">
+          <span class="tab-icon">🤖</span>
+          <span>Detector</span>
+        </button>
+      </div>
+
+      <!-- Tab: Identity Generator -->
+      <div id="tab-identity" class="tab-content active">
+        <div class="section-header">
+          <h2>Quick Identity</h2>
+          <button class="btn-sm" id="btn-generate">＋ Generate</button>
+        </div>
+        <div id="identity-result" class="identity-card hidden">
+          <div class="identity-row">
+            <span class="identity-label">Platform</span>
+            <span class="identity-value" id="id-platform">—</span>
+          </div>
+          <div class="identity-row">
+            <span class="identity-label">Username</span>
+            <div class="identity-value-copy">
+              <span id="id-username">—</span>
+              <button class="copy-btn" data-target="id-username">⧉</button>
+            </div>
+          </div>
+          <div class="identity-row">
+            <span class="identity-label">Email</span>
+            <div class="identity-value-copy">
+              <span id="id-email">—</span>
+              <button class="copy-btn" data-target="id-email">⧉</button>
+            </div>
+          </div>
+          <div class="identity-row">
+            <span class="identity-label">Risk</span>
+            <span id="id-risk" class="risk-badge">—</span>
+          </div>
+        </div>
+        <div id="identity-empty" class="empty-state">
+          <p>Press <strong>Generate</strong> to create a new anonymous identity instantly.</p>
+        </div>
+        <div class="section-footer">
+          <a class="open-webapp-link" id="link-dashboard">View all identities →</a>
+        </div>
+      </div>
+
+      <!-- Tab: Mini Inbox -->
+      <div id="tab-inbox" class="tab-content hidden">
+        <div class="section-header">
+          <h2>Recent Messages</h2>
+          <button class="btn-sm" id="btn-refresh-inbox">↻</button>
+        </div>
+        <div id="inbox-list"></div>
+        <div id="inbox-empty" class="empty-state hidden">
+          <p>No messages yet. Your inbox is clean 🎉</p>
+        </div>
+        <div id="inbox-loading" class="loading-state hidden">
+          <div class="spinner"></div>
+        </div>
+        <div class="section-footer">
+          <a class="open-webapp-link" id="link-inbox">Open full inbox →</a>
+        </div>
+      </div>
+
+      <!-- Tab: AI Detector -->
+      <div id="tab-detector" class="tab-content hidden">
+        <div class="section-header">
+          <h2>AI Detector</h2>
+        </div>
+        <div class="form-group">
+          <label>Paste text to analyze</label>
+          <textarea id="detector-input" placeholder="Paste any text here to check if it was written by AI…" rows="5"></textarea>
+        </div>
+        <button class="btn-primary" id="btn-detect">Analyze Text</button>
+        <div id="detector-result" class="detector-result hidden">
+          <div class="result-header">
+            <span id="result-label" class="result-label">—</span>
+            <span id="result-confidence" class="result-confidence">—</span>
+          </div>
+          <p id="result-explanation" class="result-explanation">—</p>
+        </div>
+        <div id="detector-loading" class="loading-state hidden">
+          <div class="spinner"></div>
+          <span>Analyzing…</span>
+        </div>
+        <div class="section-footer">
+          <a class="open-webapp-link" id="link-detector">Open full detector →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
