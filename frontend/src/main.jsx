@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
+import { ThemeProvider } from './ThemeContext'
 
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -17,16 +18,18 @@ const PrivateRoute = ({ children }) => {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/inbox" element={<PrivateRoute><Inbox /></PrivateRoute>} />
-        <Route path="/detector" element={<PrivateRoute><Detector /></PrivateRoute>} />
-        <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/inbox" element={<PrivateRoute><Inbox /></PrivateRoute>} />
+          <Route path="/detector" element={<PrivateRoute><Detector /></PrivateRoute>} />
+          <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>
 )

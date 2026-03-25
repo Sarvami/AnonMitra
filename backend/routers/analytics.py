@@ -43,3 +43,12 @@ def simulate_messages(count: int = 10):
         "total": len(results),
         "spam_count": sum(1 for r in results if r["is_spam"])
     }
+<<<<<<< HEAD
+=======
+
+@router.get("/spam-by-identity")
+def spam_by_identity():
+    results = run_simulation(20)
+    spam_messages = [r for r in results if r["is_spam"]]
+    return {"spam_messages": spam_messages}
+>>>>>>> 277d9ada3088e71c437a9fa5c0e0ee6c23be361a
