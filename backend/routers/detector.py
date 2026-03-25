@@ -11,20 +11,51 @@ router = APIRouter()
 class TextRequest(BaseModel):
     text: str
 
-@router.post("/detect/spam")
-def detect_spam(request: TextRequest):
+@router.post("/detector/text")
+def detect_text(request: TextRequest):
+    """
+    Detect if text is AI-generated using spam detection logic
+    Returns format expected by Chrome extension
+    """
     rule_result = check_spam_rules(request.text)
     ml_result = predict_spam(request.text)
     
     final_badge = "high" if rule_result["risk_badge"] == "high" or ml_result["risk_badge"] == "high" else ml_result["risk_badge"]
     
+    # Convert spam detection to AI detection format
+    is_ai = rule_result["is_spam"] or ml_result["is_spam"]
+    
+    # Map risk badge to AI detection result
+    if is_ai:
+        if final_badge == "high":
+            result = "AI"
+            explanation = "This text shows strong AI generation patterns"
+        elif final_badge == "medium":
+            result = "Mixed"
+            explanation = "This text shows some AI generation characteristics"
+        else:
+            result = "AI"
+            explanation = "This text may be AI-generated"
+    else:
+        result = "Human"
+        explanation = "This text appears to be human-written"
+    
+    # Calculate confidence based on risk score
+    confidence = min(rule_result["risk_score"] * 10, 95)  # Convert to percentage
+    if ml_result.get("confidence"):
+        confidence = (confidence + ml_result["confidence"] * 100) / 2
+    
     return {
-        "text": request.text,
-        "is_spam": rule_result["is_spam"] or ml_result["is_spam"],
-        "risk_badge": final_badge,
-        "risk_score": rule_result["risk_score"],
-        "ml_confidence": ml_result["confidence"],
-        "matched_keywords": rule_result["matched_keywords"]
+        "result": result,  # "AI", "Human", or "Mixed"
+        "confidence": round(confidence, 1),  # Percentage (0-100)
+        "explanation": explanation,
+        # Optional: Keep original spam data for debugging
+        "debug": {
+            "is_spam": is_ai,
+            "risk_badge": final_badge,
+            "risk_score": rule_result["risk_score"],
+            "matched_keywords": rule_result["matched_keywords"]
+        }
     }
 
 @router.post("/detect/image")
