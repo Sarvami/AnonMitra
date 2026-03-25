@@ -27,6 +27,7 @@ export default function Navbar() {
         <Link to="/inbox"     style={{ color: theme.blue, textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' }}>Inbox</Link>
         <Link to="/detector"  style={{ color: theme.blue, textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' }}>AI Detector</Link>
         <Link to="/analytics" style={{ color: theme.blue, textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' }}>Analytics</Link>
+        <Link to="/profile" style={{ color: theme.blue, textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' }}>Profile</Link>
         <button onClick={toggleTheme} style={{
           background: theme.input,
           border: `1px solid ${theme.border}`,

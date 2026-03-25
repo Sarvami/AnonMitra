@@ -159,3 +159,12 @@ function RiskPill({ level, theme }) {
     </span>
   )
 }
+import PageWrapper from '../components/PageWrapper'
+
+return (
+  <PageWrapper>
+    <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
+      {/* rest stays same */}
+    </div>
+  </PageWrapper>
+)
