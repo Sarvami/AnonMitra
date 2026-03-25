@@ -25,29 +25,32 @@ def detect_text(request: TextRequest):
     # Convert spam detection to AI detection format
     is_ai = rule_result["is_spam"] or ml_result["is_spam"]
     
-    # Map risk badge to AI detection result
+    # Map risk badge to AI detection result (lowercase for extension)
     if is_ai:
         if final_badge == "high":
-            result = "AI"
+            result = "ai"
             explanation = "This text shows strong AI generation patterns"
         elif final_badge == "medium":
-            result = "Mixed"
+            result = "mixed"
             explanation = "This text shows some AI generation characteristics"
         else:
-            result = "AI"
+            result = "ai"
             explanation = "This text may be AI-generated"
     else:
-        result = "Human"
+        result = "human"
         explanation = "This text appears to be human-written"
     
-    # Calculate confidence based on risk score
-    confidence = min(rule_result["risk_score"] * 10, 95)  # Convert to percentage
+    # Calculate confidence (0.0 to 1.0, not percentage)
+    raw_confidence = min(rule_result["risk_score"] * 10, 95)  # Get percentage 0-95
     if ml_result.get("confidence"):
-        confidence = (confidence + ml_result["confidence"] * 100) / 2
+        raw_confidence = (raw_confidence + ml_result["confidence"] * 100) / 2
+    
+    # Convert to float between 0.0 and 1.0
+    confidence = round(raw_confidence / 100, 3)
     
     return {
-        "result": result,  # "AI", "Human", or "Mixed"
-        "confidence": round(confidence, 1),  # Percentage (0-100)
+        "result": result,  # "ai", "human", or "mixed" (lowercase)
+        "confidence": confidence,  # 0.0 to 1.0 float
         "explanation": explanation,
         # Optional: Keep original spam data for debugging
         "debug": {
