@@ -69,6 +69,7 @@ export default function Inbox() {
         <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '20px', alignItems: 'start' }}>
 
           {/* Sidebar */}
+          <div className="sidebar-layout" style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '20px', alignItems: 'start' }}></div>
           <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '16px' }}>
             <p style={{ color: theme.faint, fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>
               Your Identities
@@ -138,3 +139,12 @@ export default function Inbox() {
     </div>
   )
 }
+import PageWrapper from '../components/PageWrapper'
+
+return (
+  <PageWrapper>
+    <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
+      {/* rest stays same */}
+    </div>
+  </PageWrapper>
+)

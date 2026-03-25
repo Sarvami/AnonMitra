@@ -64,6 +64,7 @@ export default function Analytics() {
                 <SummaryCard icon="📬" label="Total Messages"      value={summary.total_messages}            color={theme.green}  theme={theme} />
               </div>
             )}
+              <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}></div>
 
             {/* Charts Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
@@ -72,6 +73,7 @@ export default function Analytics() {
                 <p style={{ color: theme.faint, fontSize: '0.8rem', marginBottom: '20px' }}>Which identities receive the most spam</p>
                 <SpamChart data={spamData} />
               </div>
+              <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}></div>
               <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '24px' }}>
                 <h3 style={{ color: theme.text, fontWeight: '700', fontSize: '1rem', margin: '0 0 4px' }}>Risk Distribution</h3>
                 <p style={{ color: theme.faint, fontSize: '0.8rem', marginBottom: '20px' }}>Breakdown of identity risk levels</p>
@@ -159,3 +161,12 @@ function RiskPill({ level, theme }) {
     </span>
   )
 }
+import PageWrapper from '../components/PageWrapper'
+
+return (
+  <PageWrapper>
+    <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
+      {/* rest stays same */}
+    </div>
+  </PageWrapper>
+)

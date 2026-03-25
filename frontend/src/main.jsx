@@ -33,3 +33,7 @@ createRoot(document.getElementById('root')).render(
     </ThemeProvider>
   </StrictMode>
 )
+import Profile from './pages/Profile'
+
+// add this route:
+<Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
