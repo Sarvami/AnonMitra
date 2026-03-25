@@ -4,7 +4,7 @@ import SpamChart from '../components/SpamChart'
 import RiskChart from '../components/RiskChart'
 import { getSummary, getSpamByIdentity } from '../api/analytics'
 import { useTheme } from '../ThemeContext'
-
+import PageWrapper from '../components/PageWrapper'
 export default function Analytics() {
   const { theme } = useTheme()
   const [summary, setSummary] = useState(null)
@@ -160,9 +160,7 @@ function RiskPill({ level, theme }) {
       {c.label}
     </span>
   )
-}
-import PageWrapper from '../components/PageWrapper'
-
+  
 return (
   <PageWrapper>
     <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
@@ -170,3 +168,6 @@ return (
     </div>
   </PageWrapper>
 )
+
+}
+

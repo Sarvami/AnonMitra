@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Navbar from '../components/Navbar'
 import { detectText, detectImage } from '../api/detector'
 import { useTheme } from '../ThemeContext'
-
+import PageWrapper from '../components/PageWrapper'
 export default function Detector() {
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState('text')
@@ -300,13 +300,14 @@ function ResultCard({ verdict, confidence, explanation, theme }) {
       )}
     </div>
   )
-}
-import PageWrapper from '../components/PageWrapper'
-
-return (
+  return (
   <PageWrapper>
     <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
       {/* rest stays same */}
     </div>
   </PageWrapper>
 )
+}
+
+
+
