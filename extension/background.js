@@ -1,4 +1,4 @@
-/* ── AnonMitra — background.js (Enhanced & Fixed) ── */
+/* ── AnonMitra — background.js (Fully Working) ── */
 
 const API = 'http://localhost:8000';
 
@@ -17,20 +17,117 @@ function saveIdentities() {
 
 // ── Create context menu on install ──
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: 'anonmitra-detect',
-    title: '🔮 Analyze with AnonMitra',
-    contexts: ['selection']
-  });
-  chrome.contextMenus.create({
-    id: 'anonmitra-identity',
-    title: '🪪 Generate Identity for this site',
-    contexts: ['page']
+  // Clear existing menus first to avoid duplicates
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: 'anonmitra-detect',
+      title: '🔮 Analyze with AnonMitra',
+      contexts: ['selection']
+    });
+    chrome.contextMenus.create({
+      id: 'anonmitra-identity',
+      title: '🪪 Generate Identity for this site',
+      contexts: ['page']
+    });
   });
 });
 
+// ── Handle context menu clicks (SAFE - wrapped in check) ──
+if (chrome.contextMenus && chrome.contextMenus.onClicked) {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    console.log('Context menu clicked:', info.menuItemId);
+    
+    if (info.menuItemId === 'anonmitra-detect') {
+      const text = info.selectionText?.trim();
+      if (!text) return;
+      
+      if (text.length < 20) {
+        showOverlayInTab(tab.id, { error: 'Select at least 20 characters to analyze.' });
+        return;
+      }
+      
+      showOverlayInTab(tab.id, { loading: true });
+      
+      try {
+        const result = await chrome.storage.local.get('token');
+        const token = result.token;
+        
+        const res = await fetch(API + '/api/detector/text', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ text })
+        });
+        
+        const data = await res.json();
+        showOverlayInTab(tab.id, { 
+          result: data.result, 
+          confidence: data.confidence, 
+          explanation: data.explanation 
+        });
+      } catch (e) {
+        console.error('Detection error:', e);
+        showOverlayInTab(tab.id, { error: 'Backend not reachable. Make sure it\'s running on port 8000.' });
+      }
+    }
+    
+    if (info.menuItemId === 'anonmitra-identity') {
+      const domain = new URL(tab.url).hostname;
+      
+      showOverlayInTab(tab.id, { loading: true, identityLoading: true });
+      
+      try {
+        const result = await chrome.storage.local.get('token');
+        const token = result.token;
+        
+        let identity = websiteIdentities[domain];
+        
+        if (!identity) {
+          let platform = 'Social Media';
+          if (domain.includes('twitter')) platform = 'Twitter';
+          else if (domain.includes('reddit')) platform = 'Reddit';
+          else if (domain.includes('github')) platform = 'GitHub';
+          
+          try {
+            const res = await fetch(API + '/api/identities/generate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({ platform })
+            });
+            
+            identity = await res.json();
+          } catch (apiError) {
+            identity = {
+              platform: platform,
+              username: `anon_${Math.random().toString(36).substring(2, 10)}`,
+              alias_email: `anon_${Math.random().toString(36).substring(2, 8)}@anonmitra.com`
+            };
+          }
+          
+          websiteIdentities[domain] = identity;
+          saveIdentities();
+        }
+        
+        showOverlayInTab(tab.id, { identity, domain });
+      } catch (e) {
+        console.error('Identity error:', e);
+        showOverlayInTab(tab.id, { error: 'Failed to generate identity.' });
+      }
+    }
+  });
+} else {
+  console.log('Context menus API not available');
+}
+
 // ── Handle messages from content script ──
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('Message received:', message.type);
+  
   if (message.type === 'DETECT_TEXT') {
     handleTextDetection(message.text, sendResponse);
     return true;
@@ -57,6 +154,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ success: true });
     return true;
   }
+  
+  // Default response for unknown messages
+  sendResponse({ error: 'Unknown message type' });
+  return false;
 });
 
 async function handleTextDetection(text, sendResponse) {
@@ -121,6 +222,7 @@ async function handleIdentityGeneration(text, domain, sendResponse) {
       
       identity = await res.json();
     } catch (apiError) {
+      console.log('Using fallback identity generation');
       // Fallback: generate mock identity
       identity = {
         platform: platform,
@@ -144,86 +246,6 @@ async function handleIdentityGeneration(text, domain, sendResponse) {
     sendResponse({ error: error.message });
   }
 }
-
-// ── Handle right-click menu ──
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'anonmitra-detect') {
-    const text = info.selectionText?.trim();
-    if (!text) return;
-    
-    if (text.length < 20) {
-      showOverlayInTab(tab.id, { error: 'Select at least 20 characters to analyze.' });
-      return;
-    }
-    
-    showOverlayInTab(tab.id, { loading: true });
-    
-    try {
-      const result = await chrome.storage.local.get('token');
-      const token = result.token;
-      
-      const res = await fetch(API + '/api/detector/text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ text })
-      });
-      
-      const data = await res.json();
-      showOverlayInTab(tab.id, { result: data.result, confidence: data.confidence, explanation: data.explanation });
-    } catch (e) {
-      showOverlayInTab(tab.id, { error: 'Backend not reachable. Make sure it\'s running on port 8000.' });
-    }
-  }
-  
-  if (info.menuItemId === 'anonmitra-identity') {
-    const domain = new URL(tab.url).hostname;
-    
-    showOverlayInTab(tab.id, { loading: true, identityLoading: true });
-    
-    try {
-      const result = await chrome.storage.local.get('token');
-      const token = result.token;
-      
-      let identity = websiteIdentities[domain];
-      
-      if (!identity) {
-        let platform = 'Social Media';
-        if (domain.includes('twitter')) platform = 'Twitter';
-        else if (domain.includes('reddit')) platform = 'Reddit';
-        else if (domain.includes('github')) platform = 'GitHub';
-        
-        try {
-          const res = await fetch(API + '/api/identities/generate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify({ platform })
-          });
-          
-          identity = await res.json();
-        } catch (apiError) {
-          identity = {
-            platform: platform,
-            username: `anon_${Math.random().toString(36).substring(2, 10)}`,
-            alias_email: `anon_${Math.random().toString(36).substring(2, 8)}@anonmitra.com`
-          };
-        }
-        
-        websiteIdentities[domain] = identity;
-        saveIdentities();
-      }
-      
-      showOverlayInTab(tab.id, { identity, domain });
-    } catch (e) {
-      showOverlayInTab(tab.id, { error: 'Failed to generate identity.' });
-    }
-  }
-});
 
 function showOverlayInTab(tabId, data) {
   chrome.scripting.executeScript({
@@ -275,8 +297,8 @@ function showOverlay(data) {
           <strong style="color:#2dd4bf">Identity for ${data.domain}</strong>
         </div>
         <div style="font-size:11px;margin-top:8px;">
-          <div style="margin-bottom:6px"><span style="color:#8b5cf6">Username:</span> <strong>${escapeHtml(username)}</strong></div>
-          <div><span style="color:#8b5cf6">Email:</span> ${escapeHtml(email)}</div>
+          <div style="margin-bottom:6px"><span style="color:#8b5cf6">Username:</span> <strong>${escapeHtmlForOverlay(username)}</strong></div>
+          <div><span style="color:#8b5cf6">Email:</span> ${escapeHtmlForOverlay(email)}</div>
         </div>
         <button id="am-copy-identity" style="margin-top:10px;width:100%;background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);border-radius:6px;padding:6px;color:#ede9fe;cursor:pointer;font-family:monospace;font-size:11px;">📋 Copy Username</button>
       </div>
@@ -305,14 +327,14 @@ function showOverlay(data) {
           <strong style="color:${accentColor}">${emoji} ${label}</strong>
           <span style="font-size:10px;color:#8b5cf6">${pct}</span>
         </div>
-        <div style="font-size:11px;color:#c4b5fd;line-height:1.4">${escapeHtml(data.explanation || 'Analysis complete.')}</div>
+        <div style="font-size:11px;color:#c4b5fd;line-height:1.4">${escapeHtmlForOverlay(data.explanation || 'Analysis complete.')}</div>
         <div style="margin-top:8px;font-size:9px;color:rgba(139,92,246,0.5);text-align:right">AnonMitra</div>
       </div>
     `;
   } else if (data.error) {
     overlay.innerHTML = `
       <div style="padding:12px;color:#f43f5e">
-        ⚠️ ${escapeHtml(data.error)}
+        ⚠️ ${escapeHtmlForOverlay(data.error)}
       </div>
     `;
   }
@@ -343,11 +365,12 @@ function showOverlay(data) {
   }, 8000);
 }
 
-function escapeHtml(str) {
+function escapeHtmlForOverlay(str) {
   if (!str) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
