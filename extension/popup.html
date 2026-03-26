@@ -6,17 +6,26 @@
   <title>AnonMitra</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+Devanagari:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <div id="app">
     <!-- Login Screen -->
     <div id="screen-login" class="screen active">
+      <div class="grid-bg"></div>
+      <div class="scanlines"></div>
+      <div class="glow-orb"></div>
       <div class="login-header">
-        <div class="logo-mark">🛡️</div>
-        <h1 class="logo-text">AnonMitra</h1>
-        <p class="logo-sub">Your anonymous identity shield</p>
+        <div class="logo-wrap">
+          <img src="/mnt/user-data/uploads/1774514507116_image.png" alt="AnonMitra logo" id="login-logo-img" />
+          <div class="logo-ring"></div>
+          <div class="logo-ring2"></div>
+        </div>
+        <div class="wordmark">
+          <span class="anon">Anon</span><span class="mitra">मित्र</span>
+        </div>
+        <p class="logo-sub">identity & integrity protection</p>
       </div>
       <div class="form-group">
         <label>Username</label>
@@ -26,9 +35,9 @@
         <label>Password</label>
         <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password"/>
       </div>
-      <button class="btn-primary" id="btn-login">Sign In</button>
+      <button class="btn-primary" id="btn-login">SIGN_IN →</button>
       <div id="login-error" class="error-msg hidden"></div>
-      <a class="open-webapp-link" id="link-register" href="#">New user? Open web app →</a>
+      <a class="open-webapp-link" id="link-register" href="#">no account? register →</a>
     </div>
 
     <!-- Main Shell (shown after login) -->
@@ -36,11 +45,15 @@
       <!-- Top Bar -->
       <div class="topbar">
         <div class="topbar-brand">
-          <span class="topbar-icon">🛡️</span>
-          <span class="topbar-title">AnonMitra</span>
+          <div class="topbar-logo-wrap">
+            <img src="/mnt/user-data/uploads/1774514507116_image.png" alt="logo" class="topbar-logo-img" />
+          </div>
+          <div class="topbar-wordmark">
+            <span class="topbar-anon">Anon</span><span class="topbar-mitra">मित्र</span>
+          </div>
         </div>
         <div class="topbar-actions">
-          <button class="icon-btn" id="btn-theme" title="Toggle theme">☀️</button>
+          <button class="icon-btn" id="btn-theme" title="Toggle theme">🌙</button>
           <button class="icon-btn" id="btn-logout" title="Logout">⏏</button>
         </div>
       </div>
@@ -143,7 +156,26 @@
         </div>
       </div>
     </div>
+<!-- Add this as a new tab button in tabbar -->
+<button class="tab" data-tab="identities">
+  <span class="tab-icon">🔗</span>
+  <span>Sites</span>
+</button>
 
+<!-- Add this new tab content -->
+<div id="tab-identities" class="tab-content hidden">
+  <div class="section-header">
+    <h2>Website Identities</h2>
+    <button class="btn-sm" id="btn-refresh-identities">↻</button>
+  </div>
+  <div id="identities-list"></div>
+  <div id="identities-empty" class="empty-state">
+    <p>No saved identities yet.<br>Generate identities on websites to see them here.</p>
+  </div>
+  <div class="section-footer">
+    <a class="open-webapp-link" id="link-identities">Manage all identities →</a>
+  </div>
+</div>
     <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
   </div>

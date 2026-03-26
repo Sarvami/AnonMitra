@@ -1,4 +1,4 @@
-/* ── AnonMitra Extension — popup.js ── */
+/* ── AnonMitra Extension — popup.js ── Cyberpunk Theme Edition ── */
 
 const API = 'http://localhost:8000';
 const WEBAPP = 'http://localhost:5173';
@@ -56,10 +56,10 @@ function openWebApp(path = '') {
 }
 
 // ── Theme ──────────────────────────────────────────────
-
+// Note: Theme functionality kept but now cyberpunk is default
 function loadTheme() {
   chrome.storage.local.get('theme', d => {
-    const theme = d.theme || 'dark';
+    const theme = d.theme || 'dark'; // 'dark' is cyberpunk
     applyTheme(theme);
   });
 }
@@ -109,17 +109,16 @@ async function handleLogin() {
   }
 
   const btn = $('btn-login');
-  btn.textContent = 'Signing in…';
+  btn.textContent = 'SIGNING_IN...';
   btn.disabled = true;
 
   try {
     const res = await fetch(API + '/api/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: username, password })
-});
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: username, password })
+    });
 
-    // ← FIX: parse body first, then check ok
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const msg = typeof data.detail === 'string'
@@ -137,7 +136,7 @@ async function handleLogin() {
     errEl.textContent = e.message || 'Login failed. Check your credentials.';
     errEl.classList.remove('hidden');
   } finally {
-    btn.textContent = 'Sign In';
+    btn.textContent = 'SIGN_IN →';
     btn.disabled = false;
   }
 }
@@ -175,14 +174,14 @@ const PLATFORMS = ['Twitter', 'Reddit', 'Discord', 'GitHub', 'LinkedIn', 'Instag
 
 async function generateIdentity() {
   const btn = $('btn-generate');
-  btn.textContent = '…';
+  btn.textContent = '⚡';
   btn.disabled = true;
 
   try {
     const data = await apiFetch('/api/identities/generate', {
-  method: 'POST',
-  body: JSON.stringify({ platform: PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)] })
-});
+      method: 'POST',
+      body: JSON.stringify({ platform: PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)] })
+    });
 
     $('id-platform').textContent = data.platform || '—';
     $('id-username').textContent = data.username || '—';
@@ -190,17 +189,17 @@ async function generateIdentity() {
 
     const riskEl = $('id-risk');
     const riskMap = { safe: 'low', low: 'low', medium: 'medium', high: 'high' };
-const risk = riskMap[(data.risk_badge || 'safe').toLowerCase()] || 'low';
-    riskEl.textContent = risk;
+    const risk = riskMap[(data.risk_badge || 'safe').toLowerCase()] || 'low';
+    riskEl.textContent = risk.toUpperCase();
     riskEl.className = 'risk-badge ' + risk;
 
     $('identity-result').classList.remove('hidden');
     $('identity-empty').classList.add('hidden');
-    showToast('Identity generated ✓');
+    showToast('✓ Identity generated');
   } catch (e) {
     showToast('Error: ' + e.message);
   } finally {
-    btn.textContent = '＋ Generate';
+    btn.textContent = '＋ GENERATE';
     btn.disabled = false;
   }
 }
@@ -211,7 +210,7 @@ function initCopyButtons() {
       const target = $(btn.dataset.target);
       const text = target?.textContent?.trim();
       if (!text || text === '—') return;
-      navigator.clipboard.writeText(text).then(() => showToast('Copied!'));
+      navigator.clipboard.writeText(text).then(() => showToast('✓ Copied to clipboard'));
     });
   });
 }
@@ -250,7 +249,7 @@ async function loadInbox() {
         <div class="msg-subject">${escHtml(msg.subject || '(No subject)')}</div>
         <div class="msg-preview">${escHtml((msg.body || '').substring(0, 60))}…</div>
         <div class="msg-meta">
-          <span class="msg-alias">${escHtml(msg.alias_email || msg.identity_username || '')}</span>
+          <span class="msg-alias">@${escHtml(msg.alias_email || msg.identity_username || 'anon')}</span>
           <span class="msg-time">${time}</span>
         </div>
       `;
@@ -260,7 +259,7 @@ async function loadInbox() {
     });
   } catch (e) {
     loading.classList.add('hidden');
-    list.innerHTML = `<div class="empty-state" style="color:var(--danger)">${escHtml(e.message)}</div>`;
+    list.innerHTML = `<div class="empty-state" style="color:var(--danger)">⚠️ ${escHtml(e.message)}</div>`;
   }
 }
 
@@ -284,7 +283,7 @@ async function detectText() {
   const loadingEl = $('detector-loading');
 
   btn.disabled = true;
-  btn.textContent = 'Analyzing…';
+  btn.textContent = 'ANALYZING...';
   resultEl.classList.add('hidden');
   loadingEl.classList.remove('hidden');
 
@@ -301,8 +300,8 @@ async function detectText() {
     const expEl = $('result-explanation');
 
     const result = (data.result || '').toLowerCase();
-    const labels = { ai: '🤖 AI-Generated', human: '✍️ Human-Written', mixed: '⚠️ Mixed' };
-    labelEl.textContent = labels[result] || result;
+    const labels = { ai: '🤖 AI-GENERATED', human: '✍️ HUMAN-WRITTEN', mixed: '⚠️ MIXED' };
+    labelEl.textContent = labels[result] || result.toUpperCase();
     labelEl.className = 'result-label ' + result;
 
     const pct = data.confidence != null
@@ -310,14 +309,14 @@ async function detectText() {
       : '';
     confEl.textContent = pct;
 
-    expEl.textContent = data.explanation || '';
+    expEl.textContent = data.explanation || 'Analysis complete.';
     resultEl.classList.remove('hidden');
   } catch (e) {
     loadingEl.classList.add('hidden');
     showToast('Detection failed: ' + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Analyze Text';
+    btn.textContent = 'ANALYZE TEXT';
   }
 }
 
@@ -347,20 +346,98 @@ document.addEventListener('DOMContentLoaded', () => {
   // Identity
   $('btn-generate').addEventListener('click', generateIdentity);
   $('link-dashboard').addEventListener('click', async () => {
-  const token = await getToken();
-  openWebApp(token ? `/dashboard?ext_token=${token}` : '/dashboard');
-});
+    const token = await getToken();
+    openWebApp(token ? `/dashboard?ext_token=${token}` : '/dashboard');
+  });
 
-$('link-inbox').addEventListener('click', async () => {
-  const token = await getToken();
-  openWebApp(token ? `/inbox?ext_token=${token}` : '/inbox');
-});
+  $('link-inbox').addEventListener('click', async () => {
+    const token = await getToken();
+    openWebApp(token ? `/inbox?ext_token=${token}` : '/inbox');
+  });
 
   // Inbox
   $('btn-refresh-inbox').addEventListener('click', loadInbox);
-  $('link-inbox').addEventListener('click', () => openWebApp('/inbox'));
-
+  
   // Detector
   $('btn-detect').addEventListener('click', detectText);
   $('link-detector').addEventListener('click', () => openWebApp('/detector'));
 });
+// Add these functions to popup.js
+
+// ── Website Identities Management ──
+async function loadWebsiteIdentities() {
+  const list = document.getElementById('identities-list');
+  const empty = document.getElementById('identities-empty');
+  
+  if (!list) return;
+  
+  list.innerHTML = '';
+  empty.classList.add('hidden');
+  
+  try {
+    const { websiteIdentities } = await chrome.storage.local.get('websiteIdentities');
+    const identities = websiteIdentities || {};
+    const entries = Object.entries(identities);
+    
+    if (entries.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    
+    entries.forEach(([domain, identity]) => {
+      const item = document.createElement('div');
+      item.className = 'identity-card';
+      item.style.marginBottom = '8px';
+      item.innerHTML = `
+        <div class="identity-row">
+          <span class="identity-label">Site</span>
+          <span class="identity-value" style="color:#2dd4bf">${escapeHtml(domain)}</span>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Username</span>
+          <div class="identity-value-copy">
+            <span>${escapeHtml(identity.username)}</span>
+            <button class="copy-btn" data-copy="${escapeAttr(identity.username)}">⧉</button>
+          </div>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Email</span>
+          <div class="identity-value-copy">
+            <span>${escapeHtml(identity.alias_email || identity.email || '—')}</span>
+            <button class="copy-btn" data-copy="${escapeAttr(identity.alias_email || identity.email || '')}">⧉</button>
+          </div>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Created</span>
+          <span class="identity-value">${identity.created_at ? new Date(identity.created_at).toLocaleDateString() : '—'}</span>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+    
+    // Add copy functionality to new buttons
+    document.querySelectorAll('#identities-list .copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.copy;
+        if (text && text !== '—') {
+          navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!'));
+        }
+      });
+    });
+    
+  } catch (e) {
+    console.error('Failed to load identities:', e);
+    empty.classList.remove('hidden');
+    empty.innerHTML = '<p>⚠️ Failed to load identities</p>';
+  }
+}
+
+// Add to initMainView function:
+// loadWebsiteIdentities();
+
+// Add to tab click handler in initTabs:
+// if (name === 'identities') loadWebsiteIdentities();
+
+// Add event listener for refresh button:
+// const refreshBtn = document.getElementById('btn-refresh-identities');
+// if (refreshBtn) refreshBtn.addEventListener('click', loadWebsiteIdentities);
