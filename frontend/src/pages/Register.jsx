@@ -7,12 +7,7 @@ export default function Register() {
   const navigate = useNavigate()
   const { theme, isDark, toggleTheme } = useTheme()
   const [form, setForm] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    phone: '',
-    dob: '',
-    country: '',
+    email: '', password: '', fullName: '', phone: '', dob: '', country: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,18 +19,11 @@ export default function Register() {
     setLoading(true)
     setError('')
     try {
-      // Send only what backend accepts
       await register({ email: form.email, password: form.password })
-
-      // Store extra fields locally
       localStorage.setItem('userProfile', JSON.stringify({
-        fullName: form.fullName,
-        phone: form.phone,
-        dob: form.dob,
-        country: form.country,
-        email: form.email,
+        fullName: form.fullName, phone: form.phone,
+        dob: form.dob, country: form.country, email: form.email,
       }))
-
       navigate('/login')
     } catch (err) {
       const detail = err.response?.data?.detail
@@ -46,133 +34,128 @@ export default function Register() {
   }
 
   const inputStyle = {
-    background: theme.input,
+    width: '100%', background: theme.input,
     border: `1px solid ${theme.border}`,
-    borderRadius: '8px',
-    padding: '12px 16px',
-    color: theme.text,
-    fontSize: '0.95rem',
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
-    fontFamily: 'Inter, sans-serif',
+    borderRadius: '6px', padding: '10px 12px',
+    color: theme.text, fontSize: '13px', outline: 'none',
+    boxSizing: 'border-box', transition: 'border-color 0.2s',
+    fontFamily: "'Share Tech Mono', monospace",
   }
 
   const labelStyle = {
-    color: theme.muted,
-    fontSize: '0.8rem',
-    fontWeight: '600',
-    textAlign: 'left',
-    display: 'block',
-    marginBottom: '4px',
+    display: 'block', marginBottom: '6px',
+    fontFamily: "'Share Tech Mono', monospace",
+    fontSize: '10px', letterSpacing: '2px',
+    textTransform: 'uppercase', color: theme.muted,
   }
+
+  const onFocus = (e) => { e.target.style.borderColor = 'rgba(139,92,246,0.55)' }
+  const onBlur  = (e) => { e.target.style.borderColor = theme.border }
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: theme.bg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '32px 16px',
+      minHeight: '100vh', background: theme.bg,
+      display: 'flex', alignItems: 'center',
+      justifyContent: 'center', padding: '32px 16px',
+      position: 'relative', overflow: 'hidden',
     }}>
+      {/* Grid bg */}
+      <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
+
+      {/* Glow orb */}
+      <div style={{
+        position: 'absolute', width: '500px', height: '500px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)`,
+        top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)', pointerEvents: 'none',
+      }} />
+
       {/* Theme toggle */}
       <button onClick={toggleTheme} style={{
         position: 'fixed', top: '16px', right: '16px',
-        background: theme.card, border: `1px solid ${theme.border}`,
+        background: theme.input, border: `1px solid ${theme.border}`,
         borderRadius: '6px', padding: '6px 12px',
-        cursor: 'pointer', fontSize: '1rem', color: theme.text,
+        cursor: 'pointer', fontSize: '1rem', color: theme.text, zIndex: 10,
       }}>
         {isDark ? '☀️' : '🌙'}
       </button>
 
+      {/* Card */}
       <div style={{
-        background: theme.card,
-        border: `1px solid ${theme.border}`,
-        borderRadius: '14px',
-        padding: '40px',
-        width: '100%',
-        maxWidth: '460px',
+        position: 'relative', background: theme.card,
+        border: `1px solid ${theme.border}`, borderRadius: '14px',
+        padding: '40px', width: '100%', maxWidth: '460px',
+        boxShadow: `0 0 40px ${theme.glow}`,
       }}>
-        <h1 style={{ color: theme.text, fontSize: '1.8rem', fontWeight: '700', marginBottom: '8px', textAlign: 'center' }}>
-          🛡️ AnonMitra
-        </h1>
-        <p style={{ color: theme.muted, marginBottom: '28px', fontSize: '0.95rem', textAlign: 'center' }}>
-          Create your account
-        </p>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ fontSize: '2.2rem', marginBottom: '12px', filter: 'drop-shadow(0 0 12px rgba(139,92,246,0.5))' }}>🛡️</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '2px', marginBottom: '8px' }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '26px', color: theme.text }}>Anon</span>
+            <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '24px', fontWeight: '800', color: theme.teal }}>मित्र</span>
+          </div>
+          <div style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: '10px', color: theme.faint,
+            letterSpacing: '3px', textTransform: 'uppercase',
+          }}>
+            <span style={{ color: 'rgba(45,212,191,0.35)' }}>[ </span>
+            create new identity
+            <span style={{ color: 'rgba(45,212,191,0.35)' }}> ]</span>
+          </div>
+        </div>
 
         {error && (
           <div style={{
-            background: theme.red + '20',
-            border: `1px solid ${theme.red}`,
-            color: theme.red,
-            borderRadius: '8px', padding: '10px',
-            marginBottom: '16px', fontSize: '0.85rem',
+            background: theme.red + '15', border: `1px solid ${theme.red}`,
+            color: theme.red, borderRadius: '6px', padding: '10px 12px',
+            marginBottom: '20px', fontSize: '12px',
+            fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.5px',
           }}>
-            {error}
+            ⚠ {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
           {/* Full Name */}
           <div>
             <label style={labelStyle}>Full Name</label>
-            <input
-              style={inputStyle}
-              type="text"
-              placeholder="Jane Doe"
-              value={form.fullName}
-              onChange={update('fullName')}
-            />
+            <input style={inputStyle} type="text" placeholder="Jane Doe"
+              value={form.fullName} onChange={update('fullName')}
+              onFocus={onFocus} onBlur={onBlur} />
           </div>
 
           {/* Email */}
           <div>
             <label style={labelStyle}>Email <span style={{ color: theme.red }}>*</span></label>
-            <input
-              style={inputStyle}
-              type="email"
-              placeholder="jane@example.com"
-              value={form.email}
-              onChange={update('email')}
-              required
-            />
+            <input style={inputStyle} type="email" placeholder="user@domain.com"
+              value={form.email} onChange={update('email')} required
+              onFocus={onFocus} onBlur={onBlur} />
           </div>
 
           {/* Password */}
           <div>
             <label style={labelStyle}>Password <span style={{ color: theme.red }}>*</span></label>
-            <input
-              style={inputStyle}
-              type="password"
-              placeholder="Min. 8 characters"
-              value={form.password}
-              onChange={update('password')}
-              required
-            />
+            <input style={inputStyle} type="password" placeholder="min. 8 characters"
+              value={form.password} onChange={update('password')} required
+              onFocus={onFocus} onBlur={onBlur} />
           </div>
 
-          {/* Phone + DOB side by side */}
+          {/* Phone + DOB */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={labelStyle}>Phone Number</label>
-              <input
-                style={inputStyle}
-                type="tel"
-                placeholder="+91 98765 43210"
-                value={form.phone}
-                onChange={update('phone')}
-              />
+              <label style={labelStyle}>Phone</label>
+              <input style={inputStyle} type="tel" placeholder="+91 98765 43210"
+                value={form.phone} onChange={update('phone')}
+                onFocus={onFocus} onBlur={onBlur} />
             </div>
             <div>
               <label style={labelStyle}>Date of Birth</label>
-              <input
-                style={inputStyle}
-                type="date"
-                value={form.dob}
-                onChange={update('dob')}
-              />
+              <input style={{ ...inputStyle, colorScheme: isDark ? 'dark' : 'light' }}
+                type="date" value={form.dob} onChange={update('dob')}
+                onFocus={onFocus} onBlur={onBlur} />
             </div>
           </div>
 
@@ -180,14 +163,11 @@ export default function Register() {
           <div>
             <label style={labelStyle}>Country</label>
             <select
-              style={{
-                ...inputStyle,
-                cursor: 'pointer',
-              }}
-              value={form.country}
-              onChange={update('country')}
+              style={{ ...inputStyle, cursor: 'pointer', background: theme.input }}
+              value={form.country} onChange={update('country')}
+              onFocus={onFocus} onBlur={onBlur}
             >
-              <option value="">Select your country</option>
+              <option value="">-- select --</option>
               <option value="IN">🇮🇳 India</option>
               <option value="US">🇺🇸 United States</option>
               <option value="GB">🇬🇧 United Kingdom</option>
@@ -203,23 +183,29 @@ export default function Register() {
           </div>
 
           <button
+            type="submit" disabled={loading}
             style={{
-              background: theme.blue, color: '#fff',
-              border: 'none', borderRadius: '8px',
-              padding: '12px', fontWeight: '700',
-              fontSize: '1rem', cursor: 'pointer', marginTop: '4px',
+              width: '100%',
+              background: 'linear-gradient(135deg, #7c3aed, #0d9488)',
+              border: 'none', borderRadius: '6px',
+              padding: '11px', color: '#fff',
+              fontSize: '13px', letterSpacing: '2px',
+              cursor: 'pointer', marginTop: '4px',
+              fontFamily: "'Share Tech Mono', monospace",
             }}
-            type="submit"
-            disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'INITIALIZING...' : 'CREATE_ACCOUNT →'}
           </button>
         </form>
 
-        <p style={{ color: theme.muted, marginTop: '20px', fontSize: '0.9rem', textAlign: 'center' }}>
-          Already have an account?{' '}
-          <Link to="/login" style={{ color: theme.blue, fontWeight: '600' }}>Login</Link>
-        </p>
+        <div style={{
+          textAlign: 'center', marginTop: '20px',
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: '11px', color: theme.faint, letterSpacing: '1px',
+        }}>
+          already registered?{' '}
+          <Link to="/login" style={{ color: theme.blue, textDecoration: 'none' }}>sign in →</Link>
+        </div>
       </div>
     </div>
   )

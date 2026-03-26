@@ -4,22 +4,16 @@ import {
 } from 'recharts'
 
 const COLORS = {
-  safe:     '#a6e3a1',
-  moderate: '#f9e2af',
-  high:     '#f38ba8',
+  safe:     '#2dd4bf',
+  moderate: '#f59e0b',
+  high:     '#f43f5e',
 }
 
 export default function RiskChart({ data }) {
   if (!data || data.length === 0) {
-    return (
-      <div style={emptyStyle}>
-        <p style={{ fontSize: '1.5rem' }}>📊</p>
-        <p style={{ color: '#6c7086', fontSize: '0.85rem' }}>No risk data yet</p>
-      </div>
-    )
+    return <EmptyState />
   }
 
-  // Count identities by risk level
   const counts = { safe: 0, moderate: 0, high: 0 }
   data.forEach(d => {
     const level = d.risk_status?.toLowerCase()
@@ -27,10 +21,12 @@ export default function RiskChart({ data }) {
   })
 
   const chartData = [
-    { name: '🟢 Safe',      value: counts.safe,     key: 'safe'     },
-    { name: '🟡 Moderate',  value: counts.moderate, key: 'moderate' },
-    { name: '🔴 High Risk', value: counts.high,     key: 'high'     },
+    { name: 'Safe',     value: counts.safe,     key: 'safe'     },
+    { name: 'Moderate', value: counts.moderate, key: 'moderate' },
+    { name: 'High',     value: counts.high,     key: 'high'     },
   ].filter(d => d.value > 0)
+
+  if (chartData.length === 0) return <EmptyState />
 
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -39,33 +35,45 @@ export default function RiskChart({ data }) {
           data={chartData}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={90}
-          paddingAngle={4}
+          innerRadius={58}
+          outerRadius={88}
+          paddingAngle={3}
           dataKey="value"
         >
           {chartData.map((entry) => (
             <Cell
               key={entry.key}
               fill={COLORS[entry.key]}
-              stroke="transparent"
+              stroke="rgba(13,10,26,0.8)"
+              strokeWidth={2}
             />
           ))}
         </Pie>
         <Tooltip
           contentStyle={{
-            background: '#1e1e2e',
-            border: '1px solid #313244',
-            borderRadius: '8px',
-            color: '#cdd6f4',
-            fontSize: '0.85rem',
+            background: '#13102a',
+            border: '1px solid rgba(139,92,246,0.25)',
+            borderRadius: '6px',
+            color: '#ede9fe',
+            fontSize: '11px',
+            fontFamily: "'Share Tech Mono', monospace",
+            letterSpacing: '0.5px',
           }}
+          formatter={(value, name) => [value, name.toUpperCase()]}
         />
         <Legend
           iconType="circle"
-          iconSize={10}
+          iconSize={7}
           formatter={(value) => (
-            <span style={{ color: '#a6adc8', fontSize: '0.82rem' }}>{value}</span>
+            <span style={{
+              color: 'rgba(139,92,246,0.55)',
+              fontSize: '10px',
+              fontFamily: "'Share Tech Mono', monospace",
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+            }}>
+              {value}
+            </span>
           )}
         />
       </PieChart>
@@ -73,11 +81,20 @@ export default function RiskChart({ data }) {
   )
 }
 
-const emptyStyle = {
-  height: '240px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '8px',
+function EmptyState() {
+  return (
+    <div style={{
+      height: '240px', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: '10px',
+    }}>
+      <div style={{ fontSize: '1.8rem', opacity: 0.3 }}>📊</div>
+      <div style={{
+        fontFamily: "'Share Tech Mono', monospace",
+        color: 'rgba(139,92,246,0.35)',
+        fontSize: '10px', letterSpacing: '2px',
+      }}>
+        // no risk data yet
+      </div>
+    </div>
+  )
 }
