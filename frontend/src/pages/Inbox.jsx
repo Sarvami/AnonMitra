@@ -23,7 +23,7 @@ export default function Inbox() {
       const res = await getIdentities()
       setIdentities(res.data)
       if (res.data.length > 0) setSelectedId(res.data[0].id)
-    } catch (err) {
+    } catch {
       setError('Failed to load identities')
     } finally {
       setLoadingIdentities(false)
@@ -36,7 +36,7 @@ export default function Inbox() {
     try {
       const res = await getMessages(id)
       setMessages(res.data)
-    } catch (err) {
+    } catch {
       setError('Failed to load messages')
     } finally {
       setLoadingMessages(false)
@@ -49,54 +49,89 @@ export default function Inbox() {
 
   return (
     <PageWrapper>
-      <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div className="grid-bg" style={{ position: 'fixed', inset: 0, opacity: 0.4, pointerEvents: 'none' }} />
         <Navbar />
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' }}>
 
-          <h2 style={{ color: theme.text, fontSize: '1.6rem', fontWeight: '700', margin: 0 }}>📬 Inbox</h2>
-          <p style={{ color: theme.muted, fontSize: '0.9rem', marginTop: '4px', marginBottom: '24px' }}>
-            Select an identity to view its messages
-          </p>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
+
+          {/* Page header */}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: '10px', letterSpacing: '3px', color: theme.faint,
+              textTransform: 'uppercase', marginBottom: '6px',
+            }}>
+              <span style={{ color: 'rgba(45,212,191,0.4)' }}>[ </span>
+              message centre
+              <span style={{ color: 'rgba(45,212,191,0.4)' }}> ]</span>
+            </div>
+            <h2 style={{ color: theme.text, fontSize: '1.5rem', fontWeight: '700', margin: 0, fontFamily: "'Inter', sans-serif" }}>
+              Inbox
+            </h2>
+          </div>
 
           {error && (
             <div style={{
-              background: theme.red + '20', border: `1px solid ${theme.red}`,
-              color: theme.red, borderRadius: '8px',
-              padding: '10px 16px', marginBottom: '20px', fontSize: '0.85rem',
+              background: theme.red + '15', border: `1px solid ${theme.red}`,
+              color: theme.red, borderRadius: '6px', padding: '10px 14px',
+              marginBottom: '20px', fontSize: '12px',
+              fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.5px',
             }}>
-              {error}
+              ⚠ {error}
             </div>
           )}
 
-          <div className="sidebar-layout" style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '20px', alignItems: 'start' }}>
+          <div className="sidebar-layout" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '16px', alignItems: 'start' }}>
 
             {/* Sidebar */}
-            <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '16px' }}>
-              <p style={{ color: theme.faint, fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>
-                Your Identities
-              </p>
+            <div style={{
+              background: theme.card, border: `1px solid ${theme.border}`,
+              borderRadius: '10px', padding: '16px',
+              boxShadow: `0 0 16px ${theme.glow}`,
+            }}>
+              <div style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: '9px', letterSpacing: '2.5px',
+                textTransform: 'uppercase', color: theme.faint,
+                marginBottom: '14px', paddingBottom: '10px',
+                borderBottom: `1px solid ${theme.border}`,
+              }}>
+                // identities
+              </div>
+
               {loadingIdentities ? (
-                <p style={{ color: theme.faint, fontSize: '0.9rem' }}>Loading...</p>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '11px', letterSpacing: '1px' }}>
+                  loading...
+                </div>
               ) : identities.length === 0 ? (
-                <p style={{ color: theme.faint, fontSize: '0.9rem' }}>No identities found</p>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '11px' }}>
+                  no identities found
+                </div>
               ) : (
                 identities.map((identity) => (
                   <div
                     key={identity.id}
                     onClick={() => setSelectedId(identity.id)}
                     style={{
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: `1px solid ${selectedId === identity.id ? theme.blue : 'transparent'}`,
-                      background: selectedId === identity.id ? theme.input : 'transparent',
-                      cursor: 'pointer',
-                      marginBottom: '6px',
+                      padding: '10px 12px', borderRadius: '6px', marginBottom: '6px', cursor: 'pointer',
+                      border: `1px solid ${selectedId === identity.id ? 'rgba(139,92,246,0.45)' : 'transparent'}`,
+                      background: selectedId === identity.id ? 'rgba(139,92,246,0.08)' : 'transparent',
+                      transition: 'all 0.15s ease',
                     }}
                   >
-                    <div style={{ color: theme.text, fontWeight: '600', fontSize: '0.9rem' }}>
+                    <div style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      color: selectedId === identity.id ? theme.text : theme.muted,
+                      fontSize: '12px', letterSpacing: '0.5px',
+                    }}>
                       {identity.username}
                     </div>
-                    <div style={{ color: theme.blue, fontSize: '0.78rem', marginTop: '2px' }}>
+                    <div style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      color: theme.teal, fontSize: '10px', marginTop: '3px',
+                      opacity: 0.8, letterSpacing: '0.3px',
+                    }}>
                       {identity.alias_email}
                     </div>
                   </div>
@@ -104,30 +139,70 @@ export default function Inbox() {
               )}
             </div>
 
-            {/* Main */}
-            <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '20px', minHeight: '400px' }}>
+            {/* Main panel */}
+            <div style={{
+              background: theme.card, border: `1px solid ${theme.border}`,
+              borderRadius: '10px', padding: '20px', minHeight: '420px',
+              boxShadow: `0 0 16px ${theme.glow}`,
+            }}>
+              {/* Panel header */}
               {selectedIdentity && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: `1px solid ${theme.border}`, marginBottom: '20px' }}>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'center', paddingBottom: '16px',
+                  borderBottom: `1px solid ${theme.border}`, marginBottom: '20px',
+                }}>
                   <div>
-                    <span style={{ color: theme.text, fontWeight: '700' }}>{selectedIdentity.username}</span>
-                    <span style={{ color: theme.muted, fontSize: '0.85rem', marginLeft: '10px' }}>{selectedIdentity.alias_email}</span>
+                    <span style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      color: theme.text, fontSize: '13px', letterSpacing: '0.5px',
+                    }}>
+                      {selectedIdentity.username}
+                    </span>
+                    <span style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      color: theme.faint, fontSize: '11px', marginLeft: '10px',
+                    }}>
+                      {selectedIdentity.alias_email}
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem' }}>
-                    <span style={{ color: theme.green }}>✅ {cleanCount} Clean</span>
-                    <span style={{ color: theme.red }}>🚨 {spamCount} Spam</span>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <span style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      color: theme.teal, fontSize: '11px', letterSpacing: '1px',
+                    }}>
+                      ✓ {cleanCount} clean
+                    </span>
+                    <span style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      color: theme.red, fontSize: '11px', letterSpacing: '1px',
+                    }}>
+                      ⚠ {spamCount} spam
+                    </span>
                   </div>
                 </div>
               )}
 
               {loadingMessages ? (
-                <p style={{ color: theme.faint, fontSize: '0.9rem' }}>Loading messages...</p>
+                <div style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  color: theme.faint, fontSize: '11px',
+                  letterSpacing: '2px', paddingTop: '20px',
+                }}>
+                  LOADING MESSAGES...
+                </div>
               ) : messages.length === 0 ? (
                 <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                  <p style={{ fontSize: '2rem' }}>📭</p>
-                  <p style={{ color: theme.muted }}>No messages for this identity yet</p>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '16px', opacity: 0.4 }}>📭</div>
+                  <div style={{
+                    fontFamily: "'Share Tech Mono', monospace",
+                    color: theme.faint, fontSize: '12px', letterSpacing: '2px',
+                  }}>
+                    // no messages for this identity
+                  </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {messages.map((message) => (
                     <MessageCard key={message.id} message={message} />
                   ))}

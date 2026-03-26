@@ -17,14 +17,11 @@ export default function Analytics() {
 
   const fetchAll = async () => {
     try {
-      const [summaryRes, spamRes] = await Promise.all([
-        getSummary(),
-        getSpamByIdentity(),
-      ])
+      const [summaryRes, spamRes] = await Promise.all([getSummary(), getSpamByIdentity()])
       setSummary(summaryRes.data)
       const spamResult = spamRes.data
       setSpamData(Array.isArray(spamResult) ? spamResult : [])
-    } catch (err) {
+    } catch {
       setError('Failed to load analytics data')
       setSpamData([])
     } finally {
@@ -34,64 +31,99 @@ export default function Analytics() {
 
   return (
     <PageWrapper>
-      <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div className="grid-bg" style={{ position: 'fixed', inset: 0, opacity: 0.4, pointerEvents: 'none' }} />
         <Navbar />
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' }}>
 
-          <h2 style={{ color: theme.text, fontSize: '1.6rem', fontWeight: '700', margin: 0 }}>📊 Analytics</h2>
-          <p style={{ color: theme.muted, fontSize: '0.9rem', marginTop: '4px', marginBottom: '28px' }}>
-            Insights across all your virtual identities
-          </p>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
+
+          {/* Page header */}
+          <div style={{ marginBottom: '28px' }}>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: '10px', letterSpacing: '3px', color: theme.faint,
+              textTransform: 'uppercase', marginBottom: '6px',
+            }}>
+              <span style={{ color: 'rgba(45,212,191,0.4)' }}>[ </span>
+              threat intelligence
+              <span style={{ color: 'rgba(45,212,191,0.4)' }}> ]</span>
+            </div>
+            <h2 style={{ color: theme.text, fontSize: '1.5rem', fontWeight: '700', margin: 0, fontFamily: "'Inter', sans-serif" }}>
+              Analytics
+            </h2>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              color: theme.faint, fontSize: '11px', marginTop: '4px', letterSpacing: '1px',
+            }}>
+              // insights across all your virtual identities
+            </div>
+          </div>
 
           {error && (
             <div style={{
-              background: theme.red + '20', border: `1px solid ${theme.red}`,
-              color: theme.red, borderRadius: '8px',
-              padding: '10px 16px', marginBottom: '20px', fontSize: '0.85rem',
+              background: theme.red + '15', border: `1px solid ${theme.red}`,
+              color: theme.red, borderRadius: '6px', padding: '10px 14px',
+              marginBottom: '20px', fontSize: '12px',
+              fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.5px',
             }}>
-              {error}
+              ⚠ {error}
             </div>
           )}
 
           {loading ? (
-            <p style={{ color: theme.muted, textAlign: 'center', marginTop: '60px' }}>Loading analytics...</p>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              color: theme.faint, textAlign: 'center',
+              marginTop: '60px', fontSize: '12px', letterSpacing: '2px',
+            }}>
+              LOADING ANALYTICS...
+            </div>
           ) : (
             <>
               {/* Summary Cards */}
               {summary && (
-                <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
-                  <SummaryCard icon="📬" label="Total Messages"   value={summary.total_messages}             color={theme.blue}   theme={theme} />
-                  <SummaryCard icon="🚨" label="Spam Detected"    value={summary.spam_detected}              color={theme.red}    theme={theme} />
-                  <SummaryCard icon="✅" label="Safe Messages"    value={summary.safe_messages}              color={theme.green}  theme={theme} />
-                  <SummaryCard icon="📊" label="Spam Percentage"  value={`${summary.spam_percentage}%`}      color={theme.yellow} theme={theme} />
+                <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                  <SummaryCard icon="📬" label="Total Messages"  value={summary.total_messages}        color={theme.blue}   theme={theme} />
+                  <SummaryCard icon="⚠"  label="Spam Detected"  value={summary.spam_detected}         color={theme.red}    theme={theme} />
+                  <SummaryCard icon="✓"  label="Safe Messages"  value={summary.safe_messages}         color={theme.teal}   theme={theme} />
+                  <SummaryCard icon="%"  label="Spam Rate"       value={`${summary.spam_percentage}%`} color={theme.yellow} theme={theme} />
                 </div>
               )}
 
-              {/* Charts Row */}
-              <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
-                <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '24px' }}>
-                  <h3 style={{ color: theme.text, fontWeight: '700', fontSize: '1rem', margin: '0 0 4px' }}>Spam by Identity</h3>
-                  <p style={{ color: theme.faint, fontSize: '0.8rem', marginBottom: '20px' }}>Which identities receive the most spam</p>
+              {/* Charts */}
+              <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <ChartCard title="Spam by Identity" subtitle="// which identities receive most spam" theme={theme}>
                   <SpamChart data={spamData} />
-                </div>
-                <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '24px' }}>
-                  <h3 style={{ color: theme.text, fontWeight: '700', fontSize: '1rem', margin: '0 0 4px' }}>Risk Distribution</h3>
-                  <p style={{ color: theme.faint, fontSize: '0.8rem', marginBottom: '20px' }}>Breakdown of identity risk levels</p>
+                </ChartCard>
+                <ChartCard title="Risk Distribution" subtitle="// breakdown of identity risk levels" theme={theme}>
                   <RiskChart data={spamData} />
-                </div>
+                </ChartCard>
               </div>
 
-              {/* Identity Risk Table */}
-              <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '24px', overflowX: 'auto' }}>
-                <h3 style={{ color: theme.text, fontWeight: '700', fontSize: '1rem', margin: '0 0 16px' }}>Identity Risk Overview</h3>
+              {/* Risk table */}
+              <div style={{
+                background: theme.card, border: `1px solid ${theme.border}`,
+                borderRadius: '10px', padding: '24px', overflowX: 'auto',
+                boxShadow: `0 0 16px ${theme.glow}`,
+              }}>
+                <div style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: '11px', letterSpacing: '2px',
+                  textTransform: 'uppercase', color: theme.muted,
+                  marginBottom: '16px',
+                }}>
+                  Identity Risk Overview
+                </div>
+
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
                       {['Identity', 'Email', 'Spam Count', 'Risk Level'].map(col => (
                         <th key={col} style={{
-                          color: theme.faint, fontSize: '0.78rem', fontWeight: '700',
-                          textTransform: 'uppercase', letterSpacing: '0.06em',
-                          padding: '10px 16px', textAlign: 'left',
+                          fontFamily: "'Share Tech Mono', monospace",
+                          color: theme.faint, fontSize: '9px', fontWeight: '400',
+                          textTransform: 'uppercase', letterSpacing: '2px',
+                          padding: '8px 14px', textAlign: 'left',
                           borderBottom: `1px solid ${theme.border}`,
                         }}>
                           {col}
@@ -102,17 +134,35 @@ export default function Analytics() {
                   <tbody>
                     {spamData.length === 0 ? (
                       <tr>
-                        <td colSpan={4} style={{ color: theme.faint, fontSize: '0.88rem', padding: '12px 16px', textAlign: 'center' }}>
-                          No data available
+                        <td colSpan={4} style={{
+                          fontFamily: "'Share Tech Mono', monospace",
+                          color: theme.faint, fontSize: '11px',
+                          padding: '20px 14px', textAlign: 'center', letterSpacing: '1px',
+                        }}>
+                          // no data available
                         </td>
                       </tr>
                     ) : (
                       spamData.map((row, i) => (
-                        <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : theme.input + '50' }}>
-                          <td style={{ color: theme.text, fontSize: '0.88rem', padding: '12px 16px', borderBottom: `1px solid ${theme.border}50` }}>{row.username}</td>
-                          <td style={{ color: theme.blue, fontSize: '0.88rem', padding: '12px 16px', borderBottom: `1px solid ${theme.border}50` }}>{row.email}</td>
-                          <td style={{ color: theme.text, fontSize: '0.88rem', padding: '12px 16px', borderBottom: `1px solid ${theme.border}50` }}>{row.spam_count}</td>
-                          <td style={{ padding: '12px 16px', borderBottom: `1px solid ${theme.border}50` }}>
+                        <tr key={i} style={{
+                          background: i % 2 === 0 ? 'transparent' : 'rgba(139,92,246,0.03)',
+                        }}>
+                          <td style={{ padding: '11px 14px', borderBottom: `1px solid ${theme.border}30` }}>
+                            <span style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.text, fontSize: '12px' }}>
+                              {row.username}
+                            </span>
+                          </td>
+                          <td style={{ padding: '11px 14px', borderBottom: `1px solid ${theme.border}30` }}>
+                            <span style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.teal, fontSize: '12px' }}>
+                              {row.email}
+                            </span>
+                          </td>
+                          <td style={{ padding: '11px 14px', borderBottom: `1px solid ${theme.border}30` }}>
+                            <span style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.text, fontSize: '12px' }}>
+                              {row.spam_count}
+                            </span>
+                          </td>
+                          <td style={{ padding: '11px 14px', borderBottom: `1px solid ${theme.border}30` }}>
                             <RiskPill level={row.risk_status} theme={theme} />
                           </td>
                         </tr>
@@ -129,34 +179,70 @@ export default function Analytics() {
   )
 }
 
+function ChartCard({ title, subtitle, theme, children }) {
+  return (
+    <div style={{
+      background: theme.card, border: `1px solid ${theme.border}`,
+      borderRadius: '10px', padding: '24px',
+      boxShadow: `0 0 16px ${theme.glow}`,
+    }}>
+      <div style={{ fontFamily: "'Inter', sans-serif", color: theme.text, fontWeight: '700', fontSize: '0.95rem', margin: '0 0 2px' }}>
+        {title}
+      </div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '10px', marginBottom: '20px', letterSpacing: '0.5px' }}>
+        {subtitle}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 function SummaryCard({ icon, label, value, color, theme }) {
   return (
     <div style={{
-      background: theme.card,
-      border: `1px solid ${theme.border}`,
-      borderRadius: '10px',
-      padding: '20px',
-      textAlign: 'center',
+      background: theme.card, border: `1px solid ${theme.border}`,
+      borderRadius: '10px', padding: '20px',
+      boxShadow: `0 0 12px ${theme.glow}`,
+      position: 'relative', overflow: 'hidden',
     }}>
-      <div style={{ fontSize: '1.6rem' }}>{icon}</div>
-      <div style={{ fontSize: '1.8rem', fontWeight: '700', color, margin: '8px 0 4px' }}>{value}</div>
-      <div style={{ color: theme.muted, fontSize: '0.85rem' }}>{label}</div>
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+        background: color, opacity: 0.7,
+      }} />
+      <div style={{
+        fontFamily: "'Share Tech Mono', monospace",
+        fontSize: '10px', color: theme.faint, letterSpacing: '1px', marginBottom: '10px',
+      }}>
+        {icon}
+      </div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '1.7rem', fontWeight: '700', color }}>
+        {value}
+      </div>
+      <div style={{
+        fontFamily: "'Share Tech Mono', monospace",
+        color: theme.faint, fontSize: '10px',
+        marginTop: '4px', letterSpacing: '1.5px', textTransform: 'uppercase',
+      }}>
+        {label}
+      </div>
     </div>
   )
 }
 
 function RiskPill({ level, theme }) {
   const config = {
-    safe:     { color: theme.green,  bg: theme.green  + '20', label: '🟢 Safe' },
-    moderate: { color: theme.yellow, bg: theme.yellow + '20', label: '🟡 Moderate' },
-    high:     { color: theme.red,    bg: theme.red    + '20', label: '🔴 High Risk' },
+    safe:     { color: theme.teal,   bg: 'rgba(45,212,191,0.12)',  label: 'SAFE' },
+    moderate: { color: theme.yellow, bg: 'rgba(245,158,11,0.12)',  label: 'MODERATE' },
+    high:     { color: theme.red,    bg: 'rgba(244,63,94,0.12)',   label: 'HIGH' },
   }
   const c = config[level?.toLowerCase()] || config.safe
   return (
     <span style={{
       background: c.bg, color: c.color,
-      borderRadius: '99px', padding: '3px 12px',
-      fontSize: '0.78rem', fontWeight: '600',
+      borderRadius: '4px', padding: '3px 10px',
+      fontSize: '9px', letterSpacing: '1.5px',
+      fontFamily: "'Share Tech Mono', monospace",
+      border: `1px solid ${c.color}40`,
     }}>
       {c.label}
     </span>

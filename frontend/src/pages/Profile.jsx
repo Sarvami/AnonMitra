@@ -5,40 +5,22 @@ import { ToastContainer, useToast } from '../components/Toast'
 import { useTheme } from '../ThemeContext'
 
 export default function Profile() {
-  const { theme } = useTheme()
+  const { theme, isDark } = useTheme()
   const { toasts, addToast } = useToast()
-  const [profile, setProfile] = useState({
-    fullName: '',
-    phone: '',
-    dob: '',
-    country: '',
-    email: '',
-  })
+  const [profile, setProfile] = useState({ fullName: '', phone: '', dob: '', country: '', email: '' })
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
-  // Fetch user data from backend API
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        setLoading(true)
         const response = await fetch('/api/auth/me', {
-          method: 'GET',
-          credentials: 'include', // Include cookies for authentication
-          headers: {
-            'Content-Type': 'application/json',
-          }
+          method: 'GET', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
         })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data')
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch user data')
         const userData = await response.json()
-        
-        // Map backend data to profile structure
         const profileData = {
           fullName: userData.fullName || userData.name || '',
           phone: userData.phone || '',
@@ -46,37 +28,22 @@ export default function Profile() {
           country: userData.country || '',
           email: userData.email || '',
         }
-
         setProfile(profileData)
         setForm(profileData)
-        
-        // Also save to localStorage as fallback
         localStorage.setItem('userProfile', JSON.stringify(profileData))
-      } catch (err) {
-        console.error('Error fetching user data:', err)
-        setError(err.message)
-        
-        // Fallback to localStorage if API fails
+      } catch {
         const stored = localStorage.getItem('userProfile')
         if (stored) {
           const parsed = JSON.parse(stored)
           setProfile(parsed)
           setForm(parsed)
         } else {
-          // Set empty defaults
-          setForm({
-            fullName: '',
-            phone: '',
-            dob: '',
-            country: '',
-            email: '',
-          })
+          setForm({ fullName: '', phone: '', dob: '', country: '', email: '' })
         }
       } finally {
         setLoading(false)
       }
     }
-
     fetchUserData()
   }, [])
 
@@ -84,35 +51,22 @@ export default function Profile() {
 
   const handleSave = async () => {
     try {
-      // Update backend API
       const response = await fetch('/api/auth/update', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form)
+        method: 'PUT', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile')
-      }
-
-      // Update local state
+      if (!response.ok) throw new Error()
       setProfile(form)
       localStorage.setItem('userProfile', JSON.stringify(form))
       setEditing(false)
       addToast('Profile updated successfully!', 'success')
-    } catch (err) {
-      console.error('Error updating profile:', err)
+    } catch {
       addToast('Failed to update profile. Please try again.', 'error')
     }
   }
 
-  const handleCancel = () => {
-    setForm(profile)
-    setEditing(false)
-  }
+  const handleCancel = () => { setForm(profile); setEditing(false) }
 
   const countryMap = {
     IN: '🇮🇳 India', US: '🇺🇸 United States', GB: '🇬🇧 United Kingdom',
@@ -122,228 +76,211 @@ export default function Profile() {
   }
 
   const inputStyle = {
-    background: theme.input,
+    width: '100%', background: theme.input,
     border: `1px solid ${theme.border}`,
-    borderRadius: '8px',
-    padding: '12px 16px',
-    color: theme.text,
-    fontSize: '0.95rem',
-    outline: 'none',
-    width: '100%',
+    borderRadius: '6px', padding: '10px 12px',
+    color: theme.text, fontSize: '13px', outline: 'none',
     boxSizing: 'border-box',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: "'Share Tech Mono', monospace",
+    transition: 'border-color 0.2s',
   }
 
   const labelStyle = {
-    color: theme.muted,
-    fontSize: '0.8rem',
-    fontWeight: '600',
-    display: 'block',
-    marginBottom: '6px',
+    display: 'block', marginBottom: '6px',
+    fontFamily: "'Share Tech Mono', monospace",
+    fontSize: '10px', letterSpacing: '2px',
+    textTransform: 'uppercase', color: theme.muted,
   }
 
-  if (loading) {
-    return (
-      <PageWrapper>
-        <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
-          <Navbar />
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '60vh' 
-          }}>
-            <div style={{ color: theme.text, fontSize: '1rem' }}>Loading profile...</div>
-          </div>
+  const onFocus = (e) => { e.target.style.borderColor = 'rgba(139,92,246,0.55)' }
+  const onBlur  = (e) => { e.target.style.borderColor = theme.border }
+
+  const Field = ({ label, value, children }) => (
+    <div>
+      <label style={labelStyle}>{label}</label>
+      {editing ? children : (
+        <div style={{
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: '13px', color: value ? theme.text : theme.faint,
+          padding: '10px 0', letterSpacing: '0.5px',
+        }}>
+          {value || '// not set'}
         </div>
-      </PageWrapper>
-    )
-  }
+      )}
+    </div>
+  )
 
-  return (
+  if (loading) return (
     <PageWrapper>
       <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
         <Navbar />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+          <div style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            color: theme.muted, fontSize: '12px', letterSpacing: '3px',
+          }}>
+            LOADING PROFILE...
+          </div>
+        </div>
+      </div>
+    </PageWrapper>
+  )
+
+  return (
+    <PageWrapper>
+      <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div className="grid-bg" style={{ position: 'fixed', inset: 0, opacity: 0.4, pointerEvents: 'none' }} />
+        <Navbar />
         <ToastContainer toasts={toasts} />
 
-        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 24px', width: '100%' }}>
-          <h2 style={{ color: theme.text, fontSize: '1.6rem', fontWeight: '700', margin: 0 }}>👤 Profile</h2>
-          <p style={{ color: theme.muted, fontSize: '0.9rem', marginTop: '4px', marginBottom: '28px' }}>
-            Your personal information
-          </p>
+        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 24px', width: '100%', position: 'relative' }}>
 
-          {/* Avatar + Name */}
+          {/* Page header */}
+          <div style={{ marginBottom: '28px' }}>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: '10px', letterSpacing: '3px', color: theme.faint,
+              textTransform: 'uppercase', marginBottom: '6px',
+            }}>
+              <span style={{ color: 'rgba(45,212,191,0.4)' }}>[ </span>user profile<span style={{ color: 'rgba(45,212,191,0.4)' }}> ]</span>
+            </div>
+            <h2 style={{ color: theme.text, fontSize: '1.5rem', fontWeight: '700', margin: 0, fontFamily: "'Inter', sans-serif" }}>
+              Your Identity
+            </h2>
+          </div>
+
+          {/* Avatar card */}
           <div style={{
-            background: theme.card,
-            border: `1px solid ${theme.border}`,
-            borderRadius: '14px',
-            padding: '28px',
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px',
+            background: theme.card, border: `1px solid ${theme.border}`,
+            borderRadius: '12px', padding: '24px', marginBottom: '16px',
+            display: 'flex', alignItems: 'center', gap: '20px',
+            boxShadow: `0 0 20px ${theme.glow}`,
           }}>
             <div style={{
-              width: '72px', height: '72px',
-              borderRadius: '50%',
-              background: theme.blue + '30',
-              border: `2px solid ${theme.blue}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2rem',
-              flexShrink: 0,
+              width: '68px', height: '68px', borderRadius: '50%',
+              background: 'rgba(139,92,246,0.12)',
+              border: `2px solid rgba(139,92,246,0.4)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, boxShadow: '0 0 16px rgba(139,92,246,0.2)',
             }}>
-              {profile.fullName ? profile.fullName[0].toUpperCase() : '?'}
+              <span style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: '26px', color: theme.blue, fontWeight: '700',
+              }}>
+                {profile.fullName ? profile.fullName[0].toUpperCase() : '?'}
+              </span>
             </div>
             <div>
-              <div style={{ color: theme.text, fontWeight: '700', fontSize: '1.2rem' }}>
+              <div style={{ color: theme.text, fontWeight: '700', fontSize: '1.1rem', fontFamily: "'Inter', sans-serif" }}>
                 {profile.fullName || 'Anonymous User'}
               </div>
-              <div style={{ color: theme.blue, fontSize: '0.9rem', marginTop: '4px' }}>
-                {profile.email || 'No email set'}
+              <div style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                color: theme.teal, fontSize: '12px', marginTop: '4px', letterSpacing: '0.5px',
+              }}>
+                {profile.email || '// no email set'}
               </div>
               {profile.country && (
-                <div style={{ color: theme.muted, fontSize: '0.85rem', marginTop: '4px' }}>
+                <div style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  color: theme.faint, fontSize: '11px', marginTop: '4px',
+                }}>
                   {countryMap[profile.country] || profile.country}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Info Cards */}
+          {/* Details card */}
           <div style={{
-            background: theme.card,
-            border: `1px solid ${theme.border}`,
-            borderRadius: '14px',
-            padding: '28px',
+            background: theme.card, border: `1px solid ${theme.border}`,
+            borderRadius: '12px', padding: '28px',
+            boxShadow: `0 0 20px ${theme.glow}`,
           }}>
+            {/* Card header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ color: theme.text, fontWeight: '700', fontSize: '1rem', margin: 0 }}>
+              <div style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: '11px', letterSpacing: '2px',
+                textTransform: 'uppercase', color: theme.muted,
+              }}>
                 Personal Details
-              </h3>
+              </div>
               {!editing ? (
-                <button
-                  onClick={() => setEditing(true)}
-                  style={{
-                    background: theme.blue + '20',
-                    border: `1px solid ${theme.blue}`,
-                    borderRadius: '8px',
-                    padding: '8px 18px',
-                    color: theme.blue,
-                    fontWeight: '600',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✏️ Edit
+                <button onClick={() => setEditing(true)} style={{
+                  background: 'rgba(139,92,246,0.1)',
+                  border: `1px solid rgba(139,92,246,0.35)`,
+                  borderRadius: '6px', padding: '6px 16px',
+                  color: theme.blue, fontSize: '11px', letterSpacing: '1.5px',
+                  cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace",
+                }}>
+                  EDIT →
                 </button>
               ) : (
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={handleCancel}
-                    style={{
-                      background: 'transparent',
-                      border: `1px solid ${theme.border}`,
-                      borderRadius: '8px',
-                      padding: '8px 18px',
-                      color: theme.muted,
-                      fontWeight: '600',
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Cancel
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={handleCancel} style={{
+                    background: 'transparent', border: `1px solid ${theme.border}`,
+                    borderRadius: '6px', padding: '6px 14px',
+                    color: theme.muted, fontSize: '11px', letterSpacing: '1px',
+                    cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace",
+                  }}>
+                    CANCEL
                   </button>
-                  <button
-                    onClick={handleSave}
-                    style={{
-                      background: theme.green,
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 18px',
-                      color: '#1e1e2e',
-                      fontWeight: '700',
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Save
+                  <button onClick={handleSave} style={{
+                    background: 'linear-gradient(135deg, #7c3aed, #0d9488)',
+                    border: 'none', borderRadius: '6px', padding: '6px 16px',
+                    color: '#fff', fontSize: '11px', letterSpacing: '1.5px',
+                    cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace",
+                  }}>
+                    SAVE ✓
                   </button>
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
-              {/* Full Name */}
-              <div>
-                <label style={labelStyle}>Full Name</label>
-                {editing ? (
-                  <input style={inputStyle} type="text" value={form.fullName} onChange={update('fullName')} placeholder="Your full name" />
-                ) : (
-                  <div style={{ color: theme.text, fontSize: '0.95rem', padding: '12px 0' }}>
-                    {profile.fullName || <span style={{ color: theme.faint }}>Not set</span>}
-                  </div>
-                )}
-              </div>
+              <Field label="Full Name" value={profile.fullName}>
+                <input style={inputStyle} type="text" value={form.fullName}
+                  onChange={update('fullName')} placeholder="your full name"
+                  onFocus={onFocus} onBlur={onBlur} />
+              </Field>
 
-              {/* Email */}
-              <div>
-                <label style={labelStyle}>Email</label>
-                <div style={{ color: theme.text, fontSize: '0.95rem', padding: '12px 0' }}>
-                  {profile.email || <span style={{ color: theme.faint }}>Not set</span>}
-                </div>
-              </div>
+              <Field label="Email" value={profile.email}>
+                <div style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }}>{profile.email}</div>
+              </Field>
 
-              {/* Phone + DOB */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={labelStyle}>Phone Number</label>
-                  {editing ? (
-                    <input style={inputStyle} type="tel" value={form.phone} onChange={update('phone')} placeholder="+91 98765 43210" />
-                  ) : (
-                    <div style={{ color: theme.text, fontSize: '0.95rem', padding: '12px 0' }}>
-                      {profile.phone || <span style={{ color: theme.faint }}>Not set</span>}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <label style={labelStyle}>Date of Birth</label>
-                  {editing ? (
-                    <input style={inputStyle} type="date" value={form.dob} onChange={update('dob')} />
-                  ) : (
-                    <div style={{ color: theme.text, fontSize: '0.95rem', padding: '12px 0' }}>
-                      {profile.dob || <span style={{ color: theme.faint }}>Not set</span>}
-                    </div>
-                  )}
-                </div>
+                <Field label="Phone Number" value={profile.phone}>
+                  <input style={inputStyle} type="tel" value={form.phone}
+                    onChange={update('phone')} placeholder="+91 98765 43210"
+                    onFocus={onFocus} onBlur={onBlur} />
+                </Field>
+                <Field label="Date of Birth" value={profile.dob}>
+                  <input style={{ ...inputStyle, colorScheme: isDark ? 'dark' : 'light' }}
+                    type="date" value={form.dob} onChange={update('dob')}
+                    onFocus={onFocus} onBlur={onBlur} />
+                </Field>
               </div>
 
-              {/* Country */}
-              <div>
-                <label style={labelStyle}>Country</label>
-                {editing ? (
-                  <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.country} onChange={update('country')}>
-                    <option value="">Select your country</option>
-                    <option value="IN">🇮🇳 India</option>
-                    <option value="US">🇺🇸 United States</option>
-                    <option value="GB">🇬🇧 United Kingdom</option>
-                    <option value="CA">🇨🇦 Canada</option>
-                    <option value="AU">🇦🇺 Australia</option>
-                    <option value="DE">🇩🇪 Germany</option>
-                    <option value="FR">🇫🇷 France</option>
-                    <option value="JP">🇯🇵 Japan</option>
-                    <option value="SG">🇸🇬 Singapore</option>
-                    <option value="AE">🇦🇪 UAE</option>
-                    <option value="OTHER">🌍 Other</option>
-                  </select>
-                ) : (
-                  <div style={{ color: theme.text, fontSize: '0.95rem', padding: '12px 0' }}>
-                    {countryMap[profile.country] || <span style={{ color: theme.faint }}>Not set</span>}
-                  </div>
-                )}
-              </div>
+              <Field label="Country" value={countryMap[profile.country] || profile.country}>
+                <select style={{ ...inputStyle, cursor: 'pointer' }}
+                  value={form.country} onChange={update('country')}
+                  onFocus={onFocus} onBlur={onBlur}>
+                  <option value="">-- select --</option>
+                  <option value="IN">🇮🇳 India</option>
+                  <option value="US">🇺🇸 United States</option>
+                  <option value="GB">🇬🇧 United Kingdom</option>
+                  <option value="CA">🇨🇦 Canada</option>
+                  <option value="AU">🇦🇺 Australia</option>
+                  <option value="DE">🇩🇪 Germany</option>
+                  <option value="FR">🇫🇷 France</option>
+                  <option value="JP">🇯🇵 Japan</option>
+                  <option value="SG">🇸🇬 Singapore</option>
+                  <option value="AE">🇦🇪 UAE</option>
+                  <option value="OTHER">🌍 Other</option>
+                </select>
+              </Field>
 
             </div>
           </div>

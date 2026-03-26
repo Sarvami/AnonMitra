@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTheme } from '../ThemeContext'
 
 export function useToast() {
@@ -19,10 +19,10 @@ export function ToastContainer({ toasts }) {
   const { theme } = useTheme()
 
   const typeConfig = {
-    success: { bg: theme.green,  icon: '✅' },
-    error:   { bg: theme.red,    icon: '❌' },
-    info:    { bg: theme.blue,   icon: 'ℹ️' },
-    warning: { bg: theme.yellow, icon: '⚠️' },
+    success: { color: '#2dd4bf',  border: 'rgba(45,212,191,0.4)',  label: 'OK'   },
+    error:   { color: '#f43f5e',  border: 'rgba(244,63,94,0.4)',   label: 'ERR'  },
+    info:    { color: '#8b5cf6',  border: 'rgba(139,92,246,0.4)',  label: 'INF'  },
+    warning: { color: '#f59e0b',  border: 'rgba(245,158,11,0.4)',  label: 'WARN' },
   }
 
   return (
@@ -32,28 +32,48 @@ export function ToastContainer({ toasts }) {
       right: '24px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '10px',
+      gap: '8px',
       zIndex: 99999,
     }}>
       {toasts.map(toast => {
-        const config = typeConfig[toast.type] || typeConfig.success
+        const c = typeConfig[toast.type] || typeConfig.success
         return (
           <div key={toast.id} style={{
             background: theme.card,
-            border: `1px solid ${theme.border}`,
-            borderLeft: `4px solid ${config.bg}`,
-            borderRadius: '10px',
-            padding: '14px 18px',
+            border: `1px solid ${c.border}`,
+            borderLeft: `3px solid ${c.color}`,
+            borderRadius: '6px',
+            padding: '12px 16px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            minWidth: '280px',
-            maxWidth: '360px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-            animation: 'slideIn 0.3s ease',
+            gap: '12px',
+            minWidth: '260px',
+            maxWidth: '340px',
+            boxShadow: `0 8px 28px rgba(0,0,0,0.25), 0 0 12px ${c.color}18`,
+            animation: 'slideIn 0.25s ease',
           }}>
-            <span style={{ fontSize: '1.1rem' }}>{config.icon}</span>
-            <span style={{ color: theme.text, fontSize: '0.9rem', fontWeight: '500' }}>
+            {/* Type tag */}
+            <span style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: '8px', letterSpacing: '1.5px',
+              color: c.color,
+              background: c.color + '15',
+              border: `1px solid ${c.border}`,
+              borderRadius: '3px',
+              padding: '2px 6px',
+              flexShrink: 0,
+            }}>
+              {c.label}
+            </span>
+
+            {/* Message */}
+            <span style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              color: theme.text,
+              fontSize: '11px',
+              letterSpacing: '0.3px',
+              lineHeight: '1.5',
+            }}>
               {toast.message}
             </span>
           </div>
