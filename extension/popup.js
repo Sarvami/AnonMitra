@@ -56,10 +56,9 @@ function openWebApp(path = '') {
 }
 
 // ── Theme ──────────────────────────────────────────────
-// Note: Theme functionality kept but now cyberpunk is default
 function loadTheme() {
-  chrome.storage.local.get('theme', d => {
-    const theme = d.theme || 'dark'; // 'dark' is cyberpunk
+  chrome.storage.local.get('theme', (data) => {
+    const theme = data.theme || 'dark';
     applyTheme(theme);
   });
 }
@@ -67,10 +66,12 @@ function loadTheme() {
 function applyTheme(theme) {
   if (theme === 'light') {
     document.body.classList.add('light');
-    $('btn-theme').textContent = '🌙';
+    const themeBtn = document.getElementById('btn-theme');
+    if (themeBtn) themeBtn.textContent = '🌙';
   } else {
     document.body.classList.remove('light');
-    $('btn-theme').textContent = '☀️';
+    const themeBtn = document.getElementById('btn-theme');
+    if (themeBtn) themeBtn.textContent = '☀️';
   }
 }
 
@@ -80,6 +81,9 @@ function toggleTheme() {
   chrome.storage.local.set({ theme: next });
   applyTheme(next);
 }
+
+// Make sure this is in DOMContentLoaded:
+document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 
 // ── Auth ──────────────────────────────────────────────
 
@@ -441,3 +445,118 @@ async function loadWebsiteIdentities() {
 // Add event listener for refresh button:
 // const refreshBtn = document.getElementById('btn-refresh-identities');
 // if (refreshBtn) refreshBtn.addEventListener('click', loadWebsiteIdentities);
+// ── Website Identities Management ──
+async function loadWebsiteIdentities() {
+  const list = document.getElementById('identities-list');
+  const empty = document.getElementById('identities-empty');
+  
+  if (!list) return;
+  
+  list.innerHTML = '';
+  if (empty) empty.classList.add('hidden');
+  
+  try {
+    const result = await chrome.storage.local.get('websiteIdentities');
+    const identities = result.websiteIdentities || {};
+    const entries = Object.entries(identities);
+    
+    if (entries.length === 0) {
+      if (empty) empty.classList.remove('hidden');
+      return;
+    }
+    
+    entries.forEach(([domain, identity]) => {
+      const item = document.createElement('div');
+      item.className = 'identity-card';
+      item.style.marginBottom = '8px';
+      item.innerHTML = `
+        <div class="identity-row">
+          <span class="identity-label">Site</span>
+          <span class="identity-value" style="color: var(--accent-secondary); word-break: break-all;">${escapeHtml(domain)}</span>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Username</span>
+          <div class="identity-value-copy">
+            <span>${escapeHtml(identity.username || '—')}</span>
+            <button class="copy-btn" data-copy="${escapeAttr(identity.username || '')}">⧉</button>
+          </div>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Email</span>
+          <div class="identity-value-copy">
+            <span>${escapeHtml(identity.alias_email || identity.email || '—')}</span>
+            <button class="copy-btn" data-copy="${escapeAttr(identity.alias_email || identity.email || '')}">⧉</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+    
+    // Add copy functionality to new buttons
+    document.querySelectorAll('#identities-list .copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.copy;
+        if (text && text !== '—' && text !== '') {
+          navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!'));
+        }
+      });
+    });
+    
+  } catch (e) {
+    console.error('Failed to load identities:', e);
+    if (empty) {
+      empty.classList.remove('hidden');
+      empty.innerHTML = '<p>⚠️ Failed to load identities</p>';
+    }
+  }
+}
+
+// Helper functions
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escapeAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/["']/g, '&quot;');
+}
+
+// Update initTabs to include identities tab
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const name = tab.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.remove('active');
+        c.classList.add('hidden');
+      });
+      tab.classList.add('active');
+      const content = document.getElementById('tab-' + name);
+      if (content) {
+        content.classList.remove('hidden');
+        content.classList.add('active');
+      }
+
+      if (name === 'inbox') loadInbox();
+      if (name === 'identities') loadWebsiteIdentities();
+    });
+  });
+}
+
+// Add refresh button listener (add to DOMContentLoaded)
+// After other event listeners, add:
+const refreshIdentitiesBtn = document.getElementById('btn-refresh-identities');
+if (refreshIdentitiesBtn) {
+  refreshIdentitiesBtn.addEventListener('click', loadWebsiteIdentities);
+}
+
+const linkIdentities = document.getElementById('link-identities');
+if (linkIdentities) {
+  linkIdentities.addEventListener('click', () => openWebApp('/identities'));
+}

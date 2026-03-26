@@ -1,7 +1,7 @@
 /* ── AnonMitra Extension Styles ── Cyberpunk Theme ── */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+Devanagari:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-/* ── CSS Variables: Dark Cyberpunk Theme ── */
+/* ── CSS Variables: Dark Cyberpunk Theme (DEFAULT) ── */
 :root {
   --bg: #0d0a1a;
   --bg-surface: rgba(139, 92, 246, 0.04);
@@ -26,6 +26,22 @@
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.1);
 }
 
+/* ── LIGHT THEME OVERRIDES ── */
+body.light {
+  --bg: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --border: rgba(139, 92, 246, 0.25);
+  --accent: #7c3aed;
+  --accent-secondary: #0d9488;
+  --accent-glow: rgba(124, 58, 237, 0.12);
+  --accent-hover: #8b5cf6;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -40,8 +56,10 @@ body {
   line-height: 1.5;
   overflow: hidden;
   position: relative;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
+/* Grid Background (Dark) */
 body::before {
   content: '';
   position: absolute;
@@ -54,6 +72,14 @@ body::before {
   z-index: 0;
 }
 
+/* Light theme grid override */
+body.light::before {
+  background-image: 
+    linear-gradient(rgba(139, 92, 246, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.06) 1px, transparent 1px);
+}
+
+/* Scanlines (Dark) */
 body::after {
   content: '';
   position: absolute;
@@ -64,6 +90,14 @@ body::after {
   );
   pointer-events: none;
   z-index: 0;
+}
+
+/* Light theme scanlines */
+body.light::after {
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(139, 92, 246, 0.02) 2px, rgba(139, 92, 246, 0.02) 4px
+  );
 }
 
 #app {
@@ -98,6 +132,12 @@ body::after {
   pointer-events: none;
 }
 
+body.light .grid-bg {
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+}
+
 .scanlines {
   position: absolute;
   inset: 0;
@@ -106,6 +146,13 @@ body::after {
     rgba(139, 92, 246, 0.018) 2px, rgba(139, 92, 246, 0.018) 4px
   );
   pointer-events: none;
+}
+
+body.light .scanlines {
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(139, 92, 246, 0.04) 2px, rgba(139, 92, 246, 0.04) 4px
+  );
 }
 
 .glow-orb {
@@ -119,6 +166,10 @@ body::after {
   transform: translate(-50%, -50%);
   animation: orbPulse 3s ease-in-out infinite;
   pointer-events: none;
+}
+
+body.light .glow-orb {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, rgba(13, 148, 136, 0.04) 50%, transparent 70%);
 }
 
 @keyframes orbPulse {
@@ -223,7 +274,7 @@ body::after {
 .form-group input,
 .form-group textarea {
   background: rgba(139, 92, 246, 0.05);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: var(--font-mono);
@@ -234,6 +285,13 @@ body::after {
   resize: none;
 }
 
+body.light .form-group input,
+body.light .form-group textarea {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
 .form-group input:focus,
 .form-group textarea:focus {
   border-color: var(--accent);
@@ -242,9 +300,8 @@ body::after {
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: rgba(139, 92, 246, 0.3);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.5;
 }
 
 .form-group textarea {
@@ -278,7 +335,7 @@ body::after {
 
 .btn-sm {
   background: rgba(139, 92, 246, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: var(--font-mono);
@@ -288,6 +345,12 @@ body::after {
   padding: 5px 12px;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+body.light .btn-sm {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: rgba(139, 92, 246, 0.2);
 }
 
 .btn-sm:hover {
@@ -320,8 +383,13 @@ body::after {
   justify-content: space-between;
   padding: 10px 16px;
   background: rgba(139, 92, 246, 0.03);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+body.light .topbar {
+  background: var(--bg-surface);
+  border-bottom-color: rgba(139, 92, 246, 0.15);
 }
 
 .topbar-brand {
@@ -368,8 +436,12 @@ body::after {
 .tabbar {
   display: flex;
   background: rgba(139, 92, 246, 0.02);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+body.light .tabbar {
+  background: var(--bg-surface);
 }
 
 .tab {
@@ -438,16 +510,21 @@ body::after {
 .section-footer {
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid rgba(139, 92, 246, 0.15);
+  border-top: 1px solid var(--border);
   text-align: center;
 }
 
 /* ── Identity Card ── */
 .identity-card {
   background: rgba(139, 92, 246, 0.04);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+}
+
+body.light .identity-card {
+  background: var(--bg-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .identity-row {
@@ -523,6 +600,10 @@ body::after {
 .risk-badge.medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
 .risk-badge.high   { background: rgba(244, 63, 94, 0.15); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.3); }
 
+body.light .risk-badge.low    { background: rgba(13, 148, 136, 0.1); color: #0d9488; }
+body.light .risk-badge.medium { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+body.light .risk-badge.high   { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+
 /* ── Inbox Messages ── */
 #inbox-list {
   display: flex;
@@ -532,15 +613,19 @@ body::after {
 
 .message-item {
   background: rgba(139, 92, 246, 0.04);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
+body.light .message-item {
+  background: var(--bg-surface);
+}
+
 .message-item:hover {
-  border-color: rgba(139, 92, 246, 0.4);
+  border-color: var(--accent);
   background: rgba(139, 92, 246, 0.08);
 }
 
@@ -596,12 +681,16 @@ body::after {
 /* ── Detector Result ── */
 .detector-result {
   background: rgba(139, 92, 246, 0.04);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+body.light .detector-result {
+  background: var(--bg-surface);
 }
 
 .result-header {
@@ -661,7 +750,7 @@ body::after {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(139, 92, 246, 0.2);
+  border: 2px solid var(--border);
   border-top-color: var(--accent-secondary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -712,10 +801,16 @@ body::after {
   letter-spacing: 1px;
   padding: 8px 16px;
   border-radius: 99px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow);
   z-index: 999;
   white-space: nowrap;
   animation: toast-in 0.2s ease;
+}
+
+body.light .toast {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--accent);
 }
 
 @keyframes toast-in {
