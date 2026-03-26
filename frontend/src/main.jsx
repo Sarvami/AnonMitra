@@ -16,7 +16,13 @@ const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token')
   return token ? children : <Navigate to="/login" />
 }
-
+// Auto-login from extension token
+const params = new URLSearchParams(window.location.search);
+const extToken = params.get('ext_token');
+if (extToken) {
+  localStorage.setItem('token', extToken);
+  window.history.replaceState({}, '', window.location.pathname); // clean URL
+}
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>

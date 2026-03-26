@@ -61,9 +61,9 @@ export default function Analytics() {
               {summary && (
                 <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
                   <SummaryCard icon="📬" label="Total Messages"   value={summary.total_messages}             color={theme.blue}   theme={theme} />
-<SummaryCard icon="🚨" label="Spam Detected"    value={summary.spam_detected}              color={theme.red}    theme={theme} />
-<SummaryCard icon="✅" label="Safe Messages"    value={summary.safe_messages}              color={theme.green}  theme={theme} />
-<SummaryCard icon="📊" label="Spam Percentage"  value={`${summary.spam_percentage}%`}      color={theme.yellow} theme={theme} />
+                  <SummaryCard icon="🚨" label="Spam Detected"    value={summary.spam_detected}              color={theme.red}    theme={theme} />
+                  <SummaryCard icon="✅" label="Safe Messages"    value={summary.safe_messages}              color={theme.green}  theme={theme} />
+                  <SummaryCard icon="📊" label="Spam Percentage"  value={`${summary.spam_percentage}%`}      color={theme.yellow} theme={theme} />
                 </div>
               )}
 

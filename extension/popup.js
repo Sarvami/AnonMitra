@@ -113,12 +113,11 @@ async function handleLogin() {
   btn.disabled = true;
 
   try {
-    const form = new URLSearchParams({ username, password });
     const res = await fetch(API + '/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: form.toString()
-    });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: username, password })
+});
 
     // ← FIX: parse body first, then check ok
     const data = await res.json().catch(() => ({}));
@@ -180,10 +179,10 @@ async function generateIdentity() {
   btn.disabled = true;
 
   try {
-    const data = await apiFetch('/api/identities/', {
-      method: 'POST',
-      body: JSON.stringify({ platform: PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)] })
-    });
+    const data = await apiFetch('/api/identities', {
+  method: 'POST',
+  body: JSON.stringify({ platform: PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)] })
+});
 
     $('id-platform').textContent = data.platform || '—';
     $('id-username').textContent = data.username || '—';
@@ -346,7 +345,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Identity
   $('btn-generate').addEventListener('click', generateIdentity);
-  $('link-dashboard').addEventListener('click', () => openWebApp('/dashboard'));
+  $('link-dashboard').addEventListener('click', async () => {
+  const token = await getToken();
+  openWebApp(token ? `/dashboard?ext_token=${token}` : '/dashboard');
+});
+
+$('link-inbox').addEventListener('click', async () => {
+  const token = await getToken();
+  openWebApp(token ? `/inbox?ext_token=${token}` : '/inbox');
+});
 
   // Inbox
   $('btn-refresh-inbox').addEventListener('click', loadInbox);
