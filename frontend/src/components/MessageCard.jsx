@@ -13,7 +13,7 @@ export default function MessageCard({ message }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#cdd6f4', fontWeight: '600' }}>{message.subject || '(No Subject)'}</span>
-        <RiskBadge level={message.risk_level} />
+        <RiskBadge level={message.risk_score >= 0.7 ? 'high' : message.risk_score >= 0.4 ? 'moderate' : 'safe'} />
       </div>
       <div style={{ color: '#a6adc8', fontSize: '0.85rem' }}>From: {message.sender}</div>
       <div style={{ color: '#cdd6f4', fontSize: '0.9rem', lineHeight: '1.5' }}>{message.body}</div>
