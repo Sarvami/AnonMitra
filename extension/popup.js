@@ -179,7 +179,7 @@ async function generateIdentity() {
   btn.disabled = true;
 
   try {
-    const data = await apiFetch('/api/identities', {
+    const data = await apiFetch('/api/identities/generate', {
   method: 'POST',
   body: JSON.stringify({ platform: PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)] })
 });
@@ -189,7 +189,8 @@ async function generateIdentity() {
     $('id-email').textContent = data.alias_email || data.email || '—';
 
     const riskEl = $('id-risk');
-    const risk = (data.risk_badge || data.risk_status || 'low').toLowerCase();
+    const riskMap = { safe: 'low', low: 'low', medium: 'medium', high: 'high' };
+const risk = riskMap[(data.risk_badge || 'safe').toLowerCase()] || 'low';
     riskEl.textContent = risk;
     riskEl.className = 'risk-badge ' + risk;
 

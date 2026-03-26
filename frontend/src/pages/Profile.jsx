@@ -16,31 +16,97 @@ export default function Profile() {
   })
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
-useEffect(() => {
-  const stored = localStorage.getItem('userProfile')
-  if (stored) {
-    const parsed = JSON.parse(stored)
-    setProfile(parsed)
-    setForm(parsed)
-  } else {
-    // Set empty defaults to avoid uncontrolled input warning
-    setForm({
-      fullName: '',
-      phone: '',
-      dob: '',
-      country: '',
-      email: '',
-    })
-  }
-}, [])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch user data from backend API
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include', // Include cookies for authentication
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data')
+        }
+
+        const userData = await response.json()
+        
+        // Map backend data to profile structure
+        const profileData = {
+          fullName: userData.fullName || userData.name || '',
+          phone: userData.phone || '',
+          dob: userData.dob || userData.dateOfBirth || '',
+          country: userData.country || '',
+          email: userData.email || '',
+        }
+
+        setProfile(profileData)
+        setForm(profileData)
+        
+        // Also save to localStorage as fallback
+        localStorage.setItem('userProfile', JSON.stringify(profileData))
+      } catch (err) {
+        console.error('Error fetching user data:', err)
+        setError(err.message)
+        
+        // Fallback to localStorage if API fails
+        const stored = localStorage.getItem('userProfile')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          setProfile(parsed)
+          setForm(parsed)
+        } else {
+          // Set empty defaults
+          setForm({
+            fullName: '',
+            phone: '',
+            dob: '',
+            country: '',
+            email: '',
+          })
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [])
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
-  const handleSave = () => {
-    localStorage.setItem('userProfile', JSON.stringify(form))
-    setProfile(form)
-    setEditing(false)
-    addToast('Profile updated successfully!', 'success')
+  const handleSave = async () => {
+    try {
+      // Update backend API
+      const response = await fetch('/api/auth/update', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile')
+      }
+
+      // Update local state
+      setProfile(form)
+      localStorage.setItem('userProfile', JSON.stringify(form))
+      setEditing(false)
+      addToast('Profile updated successfully!', 'success')
+    } catch (err) {
+      console.error('Error updating profile:', err)
+      addToast('Failed to update profile. Please try again.', 'error')
+    }
   }
 
   const handleCancel = () => {
@@ -74,6 +140,24 @@ useEffect(() => {
     fontWeight: '600',
     display: 'block',
     marginBottom: '6px',
+  }
+
+  if (loading) {
+    return (
+      <PageWrapper>
+        <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
+          <Navbar />
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '60vh' 
+          }}>
+            <div style={{ color: theme.text, fontSize: '1rem' }}>Loading profile...</div>
+          </div>
+        </div>
+      </PageWrapper>
+    )
   }
 
   return (
