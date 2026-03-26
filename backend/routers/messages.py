@@ -301,4 +301,26 @@ def mark_as_read(
     db.commit()
     db.refresh(message)
     
+@router.get("/")
+def get_recent_messages(limit: int = 8, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    messages = db.query(models.Message)\
+        .join(models.Identity)\
+        .filter(models.Identity.user_id == current_user.id)\
+        .order_by(models.Message.received_at.desc())\
+        .limit(limit)\
+        .all()
+    
+    return [
+        {
+            "id": m.id,
+            "sender": m.sender,
+            "subject": m.subject,
+            "body": m.body,
+            "risk_score": m.risk_score,
+            "is_spam": m.is_spam,
+            "received_at": m.received_at
+        }
+        for m in messages
+    ]
+    
 
