@@ -21,11 +21,11 @@ class GenerateRequest(BaseModel):
 # ── Helper ────────────────────────────────────────────────────────────────────
 
 def _serialize(identity: models.Identity) -> dict:
-    """Decrypt stored fields and return a safe response dict."""
     return {
         "id":          identity.id,
         "alias_email": decrypt(identity.alias_email),
         "username":    decrypt(identity.username),
+        "password":    decrypt(identity.password),
         "platform":    identity.platform,
         "risk_badge":  identity.risk_badge,
         "is_active":   identity.is_active,
