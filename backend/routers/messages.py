@@ -60,6 +60,43 @@ FAKE_BODIES = [
 # Risk scores intentionally high so simulated spam always gets flagged
 SPAM_RISK_SCORES = [0.72, 0.85, 0.91, 0.78, 0.88, 0.95, 0.76, 0.83]
 
+# ── Clean message simulation data ─────────────────────────────────────────────
+
+CLEAN_SENDERS = [
+    "noreply@github.com",
+    "info@coursera.org",
+    "hello@notion.so",
+    "support@figma.com",
+    "team@slack.com",
+    "no-reply@linkedin.com",
+    "noreply@google.com",
+    "updates@trello.com",
+]
+
+CLEAN_SUBJECTS = [
+    "Your pull request has been merged",
+    "Weekly digest: Top courses for you",
+    "Your workspace is ready",
+    "Invoice for your subscription",
+    "You have a new connection request",
+    "Meeting notes from today's standup",
+    "Your file has been shared with you",
+    "Reminder: Assignment due tomorrow",
+]
+
+CLEAN_BODIES = [
+    "Your pull request was successfully merged into main. Great work!",
+    "Here is your weekly summary of recommended courses based on your interests.",
+    "Your Notion workspace has been set up. Click here to get started.",
+    "Please find attached your invoice for this month. Thank you for your continued subscription.",
+    "You have a new LinkedIn connection request from someone in your network.",
+    "Here are the notes from today's standup meeting. Please review and add any comments.",
+    "A document has been shared with you on Google Drive. Click to view.",
+    "This is a reminder that your assignment is due tomorrow at 11:59 PM.",
+]
+
+# Risk scores intentionally low so clean messages always pass
+CLEAN_RISK_SCORES = [0.05, 0.08, 0.12, 0.07, 0.10, 0.03, 0.09, 0.06]
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -199,6 +236,40 @@ def simulate_spam(
 
     return _serialize_message(fake_message)
 
+@router.post("/simulate-clean", status_code=status.HTTP_201_CREATED)
+def simulate_clean(
+    payload:      SimulateRequest,
+    db:           Session         = Depends(get_db),
+    current_user: models.User     = Depends(get_current_user),
+):
+    """
+    POST /api/messages/simulate-clean
+    Fire a fake legitimate message at a given identity for demo comparison.
+    """
+    _verify_identity_ownership(payload.identity_id, current_user.id, db)
+
+    risk_score = random.choice(CLEAN_RISK_SCORES)
+
+    clean_message = models.Message(
+        id          = str(uuid.uuid4()),
+        identity_id = payload.identity_id,
+        sender      = random.choice(CLEAN_SENDERS),
+        subject     = random.choice(CLEAN_SUBJECTS),
+        body        = random.choice(CLEAN_BODIES),
+        risk_score  = risk_score,
+        is_spam     = False,
+        is_read     = False,
+        received_at = datetime.utcnow(),
+    )
+
+    db.add(clean_message)
+    db.commit()
+    db.refresh(clean_message)
+
+    _update_risk_badge(payload.identity_id, db)
+
+    return _serialize_message(clean_message)
+
 
 @router.patch("/{message_id}/read", status_code=status.HTTP_200_OK)
 def mark_as_read(
@@ -229,3 +300,5 @@ def mark_as_read(
     message.is_read = True
     db.commit()
     db.refresh(message)
+    
+
