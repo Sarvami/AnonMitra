@@ -3,6 +3,17 @@ import { useNavigate, Link } from 'react-router-dom'
 import { register } from '../api/auth'
 import { useTheme } from '../ThemeContext'
 
+// Fix <option> background — inline styles don't work on <option> tags in browsers
+const optionStyle = `
+  select option {
+    background: #1a1528 !important;
+    color: #ede9fe !important;
+  }
+  select:focus option {
+    background: #1a1528 !important;
+  }
+`
+
 export default function Register() {
   const navigate = useNavigate()
   const { theme, isDark, toggleTheme } = useTheme()
@@ -59,6 +70,9 @@ export default function Register() {
       justifyContent: 'center', padding: '32px 16px',
       position: 'relative', overflow: 'hidden',
     }}>
+      {/* Inject option styles — only way to style <option> tags */}
+      <style>{optionStyle}</style>
+
       {/* Grid bg */}
       <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
 
@@ -163,7 +177,13 @@ export default function Register() {
           <div>
             <label style={labelStyle}>Country</label>
             <select
-              style={{ ...inputStyle, cursor: 'pointer', background: theme.input }}
+              style={{
+                ...inputStyle,
+                cursor: 'pointer',
+                background: '#1a1528',   /* dark bg for the select box itself */
+                color: '#ede9fe',        /* always light text */
+                colorScheme: 'dark',     /* tells browser to use dark scrollbar/chrome */
+              }}
               value={form.country} onChange={update('country')}
               onFocus={onFocus} onBlur={onBlur}
             >
