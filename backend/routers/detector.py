@@ -13,52 +13,37 @@ class TextRequest(BaseModel):
 
 @router.post("/text")
 def detect_text(request: TextRequest):
-    """
-    Detect if text is AI-generated using spam detection logic
-    Returns format expected by Chrome extension
-    """
-    rule_result = check_spam_rules(request.text)
-    ml_result = predict_spam(request.text)
+    import requests
     
-    final_badge = "high" if rule_result["risk_badge"] == "high" or ml_result["risk_badge"] == "high" else ml_result["risk_badge"]
+    GPTZERO_API_KEY = "your_api_key_here"
     
-    # Convert spam detection to AI detection format
-    is_ai = rule_result["is_spam"] or ml_result["is_spam"]
+    response = requests.post(
+        "https://api.gptzero.me/v2/predict/text",
+        headers={
+            "x-api-key": GPTZERO_API_KEY,
+            "Content-Type": "application/json"
+        },
+        json={"document": request.text}
+    )
     
-    # Map risk badge to AI detection result (lowercase for extension)
-    if is_ai:
-        if final_badge == "high":
-            result = "ai"
-            explanation = "This text shows strong AI generation patterns"
-        elif final_badge == "medium":
-            result = "mixed"
-            explanation = "This text shows some AI generation characteristics"
-        else:
-            result = "ai"
-            explanation = "This text may be AI-generated"
+    data = response.json()
+    
+    prob = data.get("documents", [{}])[0].get("average_generated_prob", 0)
+    
+    if prob > 0.7:
+        result = "ai"
+        explanation = "This text is likely AI-generated"
+    elif prob > 0.4:
+        result = "mixed"
+        explanation = "This text may be partially AI-generated"
     else:
         result = "human"
         explanation = "This text appears to be human-written"
     
-    # Calculate confidence (0.0 to 1.0, not percentage)
-    raw_confidence = min(rule_result["risk_score"] * 10, 95)  # Get percentage 0-95
-    if ml_result.get("confidence"):
-        raw_confidence = (raw_confidence + ml_result["confidence"] * 100) / 2
-    
-    # Convert to float between 0.0 and 1.0
-    confidence = round(raw_confidence / 100, 3)
-    
     return {
-        "result": result,  # "ai", "human", or "mixed" (lowercase)
-        "confidence": confidence,  # 0.0 to 1.0 float
-        "explanation": explanation,
-        # Optional: Keep original spam data for debugging
-        "debug": {
-            "is_spam": is_ai,
-            "risk_badge": final_badge,
-            "risk_score": rule_result["risk_score"],
-            "matched_keywords": rule_result["matched_keywords"]
-        }
+        "result": result,
+        "confidence": round(prob, 3),
+        "explanation": explanation
     }
 
 @router.post("/image")
