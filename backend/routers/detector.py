@@ -11,7 +11,7 @@ router = APIRouter()
 class TextRequest(BaseModel):
     text: str
 
-@router.post("/detector/text")
+@router.post("/text")
 def detect_text(request: TextRequest):
     """
     Detect if text is AI-generated using spam detection logic
@@ -61,7 +61,7 @@ def detect_text(request: TextRequest):
         }
     }
 
-@router.post("/detect/image")
+@router.post("/image")
 async def detect_image(file: UploadFile = File(...)):
     temp_path = f"temp_{file.filename}"
     
