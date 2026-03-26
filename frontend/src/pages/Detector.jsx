@@ -166,6 +166,7 @@ export default function Detector() {
                     verdict={textResult.result}
                     confidence={textResult.confidence}
                     explanation={textResult.explanation}
+                    isPercent={false}
                     theme={theme}
                   />
                 )}
@@ -241,10 +242,12 @@ export default function Detector() {
 
                 {imageError && <ErrorBanner msg={imageError} theme={theme} />}
                 {imageResult && (
+                  // ── FIX 1: use correct image result field names ──
                   <ResultCard
-                    verdict={imageResult.result}
+                    verdict={imageResult.is_ai_generated ? 'ai' : 'human'}
                     confidence={imageResult.confidence}
-                    explanation={imageResult.explanation}
+                    explanation={`Risk level: ${imageResult.risk_level} — ${imageResult.verdict}`}
+                    isPercent={true}
                     theme={theme}
                   />
                 )}
@@ -270,9 +273,12 @@ function ErrorBanner({ msg, theme }) {
   )
 }
 
-function ResultCard({ verdict, confidence, explanation, theme }) {
+function ResultCard({ verdict, confidence, explanation, isPercent, theme }) {
   const isAI = verdict?.toLowerCase().includes('ai')
-  const confidencePct = Math.round((confidence || 0) * 100)
+  // ── FIX 2: image backend sends % directly, text sends 0-1 float ──
+  const confidencePct = isPercent
+    ? Math.round(confidence || 0)
+    : Math.round((confidence || 0) * 100)
   const accentColor = isAI ? theme.red : theme.teal
 
   return (
