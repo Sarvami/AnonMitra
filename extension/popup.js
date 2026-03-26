@@ -45,8 +45,8 @@ async function apiFetch(path, options = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(API + path, { ...options, headers });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -119,13 +119,23 @@ async function handleLogin() {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: form.toString()
     });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Login failed');
-    const data = await res.json();
+
+    // ← FIX: parse body first, then check ok
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = typeof data.detail === 'string'
+        ? data.detail
+        : Array.isArray(data.detail)
+          ? data.detail.map(d => d.msg).join(', ')
+          : 'Login failed. Check your credentials.';
+      throw new Error(msg);
+    }
+
     await setToken(data.access_token);
     showScreen('main');
     initMainView();
   } catch (e) {
-    errEl.textContent = e.message;
+    errEl.textContent = e.message || 'Login failed. Check your credentials.';
     errEl.classList.remove('hidden');
   } finally {
     btn.textContent = 'Sign In';
@@ -291,7 +301,8 @@ async function detectText() {
     const expEl = $('result-explanation');
 
     const result = (data.result || '').toLowerCase();
-    labelEl.textContent = result === 'ai' ? '🤖 AI-Generated' : '✍️ Human-Written';
+    const labels = { ai: '🤖 AI-Generated', human: '✍️ Human-Written', mixed: '⚠️ Mixed' };
+    labelEl.textContent = labels[result] || result;
     labelEl.className = 'result-label ' + result;
 
     const pct = data.confidence != null
