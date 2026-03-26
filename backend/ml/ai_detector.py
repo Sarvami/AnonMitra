@@ -23,10 +23,11 @@ def detect_ai_image(image_path: str) -> dict:
         human_score = 0.0
         
         for result in results:
-            if "artificial" in result["label"].lower() or "ai" in result["label"].lower():
-                ai_score = result["score"]
-            else:
-                human_score = result["score"]
+         label = result["label"].lower()
+         if "artificial" in label or "ai" in label or "fake" in label or "generated" in label:
+          ai_score = result["score"]
+         else:
+          human_score = result["score"]
         
         is_ai = ai_score > human_score
         confidence = round(max(ai_score, human_score), 2)
