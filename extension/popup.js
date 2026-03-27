@@ -1,4 +1,4 @@
-/* ── AnonMitra Extension — popup.js ── Cyberpunk Theme Edition ── */
+/* ── AnonMitra Extension — popup.js ── */
 
 const API = 'http://localhost:8000';
 const WEBAPP = 'http://localhost:5173';
@@ -55,38 +55,63 @@ function openWebApp(path = '') {
   chrome.tabs.create({ url: WEBAPP + path });
 }
 
-// ── Theme ──────────────────────────────────────────────
-function loadTheme() {
-  chrome.storage.local.get('theme', (data) => {
-    const theme = data.theme || 'dark';
-    applyTheme(theme);
+// ── Get current tab's domain ──────────────────────────────
+async function getCurrentDomain() {
+  return new Promise(resolve => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      try {
+        const url = tabs[0]?.url;
+        if (!url || url.startsWith('chrome://') || url.startsWith('edge://') || url.startsWith('about:')) {
+          resolve(null);
+        } else {
+          resolve(new URL(url).hostname);
+        }
+      } catch {
+        resolve(null);
+      }
+    });
   });
+}
+
+// ── HTML escape helpers ───────────────────────────────────
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/["']/g, '&quot;');
+}
+
+// ── Theme ─────────────────────────────────────────────────
+function loadTheme() {
+  chrome.storage.local.get('theme', d => applyTheme(d.theme || 'dark'));
 }
 
 function applyTheme(theme) {
   if (theme === 'light') {
     document.body.classList.add('light');
-    const themeBtn = document.getElementById('btn-theme');
-    if (themeBtn) themeBtn.textContent = '🌙';
+    const btn = $('btn-theme');
+    if (btn) btn.textContent = '🌙';
   } else {
     document.body.classList.remove('light');
-    const themeBtn = document.getElementById('btn-theme');
-    if (themeBtn) themeBtn.textContent = '☀️';
+    const btn = $('btn-theme');
+    if (btn) btn.textContent = '☀️';
   }
 }
 
 function toggleTheme() {
-  const isLight = document.body.classList.contains('light');
-  const next = isLight ? 'dark' : 'light';
+  const next = document.body.classList.contains('light') ? 'dark' : 'light';
   chrome.storage.local.set({ theme: next });
   applyTheme(next);
 }
 
-// Make sure this is in DOMContentLoaded:
-document.getElementById('btn-theme').addEventListener('click', toggleTheme);
-
-// ── Auth ──────────────────────────────────────────────
-
+// ── Auth ──────────────────────────────────────────────────
 async function tryAutoLogin() {
   const token = await getToken();
   if (!token) { showScreen('login'); return; }
@@ -122,7 +147,6 @@ async function handleLogin() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: username, password })
     });
-
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const msg = typeof data.detail === 'string'
@@ -132,12 +156,11 @@ async function handleLogin() {
           : 'Login failed. Check your credentials.';
       throw new Error(msg);
     }
-
     await setToken(data.access_token);
     showScreen('main');
     initMainView();
   } catch (e) {
-    errEl.textContent = e.message || 'Login failed. Check your credentials.';
+    errEl.textContent = e.message || 'Login failed.';
     errEl.classList.remove('hidden');
   } finally {
     btn.textContent = 'SIGN_IN →';
@@ -151,8 +174,7 @@ async function handleLogout() {
   showToast('Logged out');
 }
 
-// ── Tabs ──────────────────────────────────────────────
-
+// ── Tabs ──────────────────────────────────────────────────
 function initTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -164,39 +186,36 @@ function initTabs() {
       });
       tab.classList.add('active');
       const content = $('tab-' + name);
-      content.classList.remove('hidden');
-      content.classList.add('active');
-
+      if (content) {
+        content.classList.remove('hidden');
+        content.classList.add('active');
+      }
       if (name === 'inbox') loadInbox();
+      if (name === 'identities') loadWebsiteIdentities();
     });
   });
 }
 
-// ── Identity Generator ──────────────────────────────────
-
+// ── Identity Generator ────────────────────────────────────
 const PLATFORMS = ['Twitter', 'Reddit', 'Discord', 'GitHub', 'LinkedIn', 'Instagram', 'Telegram'];
 
 async function generateIdentity() {
   const btn = $('btn-generate');
   btn.textContent = '⚡';
   btn.disabled = true;
-
   try {
     const data = await apiFetch('/api/identities/generate', {
       method: 'POST',
       body: JSON.stringify({ platform: PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)] })
     });
-
     $('id-platform').textContent = data.platform || '—';
     $('id-username').textContent = data.username || '—';
     $('id-email').textContent = data.alias_email || data.email || '—';
-
-    const riskEl = $('id-risk');
     const riskMap = { safe: 'low', low: 'low', medium: 'medium', high: 'high' };
     const risk = riskMap[(data.risk_badge || 'safe').toLowerCase()] || 'low';
+    const riskEl = $('id-risk');
     riskEl.textContent = risk.toUpperCase();
     riskEl.className = 'risk-badge ' + risk;
-
     $('identity-result').classList.remove('hidden');
     $('identity-empty').classList.add('hidden');
     showToast('✓ Identity generated');
@@ -209,7 +228,7 @@ async function generateIdentity() {
 }
 
 function initCopyButtons() {
-  document.querySelectorAll('.copy-btn').forEach(btn => {
+  document.querySelectorAll('.copy-btn[data-target]').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = $(btn.dataset.target);
       const text = target?.textContent?.trim();
@@ -219,35 +238,27 @@ function initCopyButtons() {
   });
 }
 
-// ── Inbox ──────────────────────────────────────────────
-
+// ── Inbox ─────────────────────────────────────────────────
 async function loadInbox() {
   const list = $('inbox-list');
   const empty = $('inbox-empty');
   const loading = $('inbox-loading');
-
   list.innerHTML = '';
   empty.classList.add('hidden');
   loading.classList.remove('hidden');
-
   try {
     const messages = await apiFetch('/api/messages/?limit=8');
     loading.classList.add('hidden');
-
     if (!messages || messages.length === 0) {
       empty.classList.remove('hidden');
       return;
     }
-
     messages.forEach(msg => {
       const item = document.createElement('div');
-      const isUnread = !msg.is_read;
-      item.className = 'message-item' + (isUnread ? ' unread' : '');
-
+      item.className = 'message-item' + (!msg.is_read ? ' unread' : '');
       const time = msg.received_at
         ? new Date(msg.received_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
         : '';
-
       item.innerHTML = `
         <div class="msg-from">${escHtml(msg.sender || 'Unknown Sender')}</div>
         <div class="msg-subject">${escHtml(msg.subject || '(No subject)')}</div>
@@ -257,7 +268,6 @@ async function loadInbox() {
           <span class="msg-time">${time}</span>
         </div>
       `;
-
       item.addEventListener('click', () => openWebApp('/inbox'));
       list.appendChild(item);
     });
@@ -267,53 +277,32 @@ async function loadInbox() {
   }
 }
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-// ── AI Detector ──────────────────────────────────────────
-
+// ── AI Detector ───────────────────────────────────────────
 async function detectText() {
   const text = $('detector-input').value.trim();
   if (!text) { showToast('Please paste some text first.'); return; }
   if (text.length < 50) { showToast('Text too short — use at least 50 characters.'); return; }
-
   const btn = $('btn-detect');
   const resultEl = $('detector-result');
   const loadingEl = $('detector-loading');
-
   btn.disabled = true;
   btn.textContent = 'ANALYZING...';
   resultEl.classList.add('hidden');
   loadingEl.classList.remove('hidden');
-
   try {
     const data = await apiFetch('/api/detector/text', {
       method: 'POST',
       body: JSON.stringify({ text })
     });
-
     loadingEl.classList.add('hidden');
-
-    const labelEl = $('result-label');
-    const confEl = $('result-confidence');
-    const expEl = $('result-explanation');
-
     const result = (data.result || '').toLowerCase();
     const labels = { ai: '🤖 AI-GENERATED', human: '✍️ HUMAN-WRITTEN', mixed: '⚠️ MIXED' };
+    const labelEl = $('result-label');
     labelEl.textContent = labels[result] || result.toUpperCase();
     labelEl.className = 'result-label ' + result;
-
-    const pct = data.confidence != null
-      ? Math.round(data.confidence * 100) + '% confidence'
-      : '';
-    confEl.textContent = pct;
-
-    expEl.textContent = data.explanation || 'Analysis complete.';
+    $('result-confidence').textContent = data.confidence != null
+      ? Math.round(data.confidence * 100) + '% confidence' : '';
+    $('result-explanation').textContent = data.explanation || 'Analysis complete.';
     resultEl.classList.remove('hidden');
   } catch (e) {
     loadingEl.classList.add('hidden');
@@ -324,15 +313,112 @@ async function detectText() {
   }
 }
 
-// ── Init Main View ──────────────────────────────────────
+// ── Website Identities (Sites tab) ───────────────────────
+async function loadWebsiteIdentities() {
+  const list = $('identities-list');
+  const empty = $('identities-empty');
+  const banner = $('current-site-banner');
+  if (!list) return;
 
+  list.innerHTML = '';
+  empty.classList.add('hidden');
+  banner.classList.add('hidden');
+
+  // Get current domain to highlight it
+  const currentDomain = await getCurrentDomain();
+
+  // Show current site banner
+  if (currentDomain) {
+    $('current-site-domain').textContent = currentDomain;
+    banner.classList.remove('hidden');
+  }
+
+  try {
+    const result = await chrome.storage.local.get('websiteIdentities');
+    const identities = result.websiteIdentities || {};
+    const entries = Object.entries(identities);
+
+    if (entries.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    // Sort: current site first
+    entries.sort(([a], [b]) => {
+      if (a === currentDomain) return -1;
+      if (b === currentDomain) return 1;
+      return 0;
+    });
+
+    entries.forEach(([domain, identity]) => {
+      const isCurrentSite = domain === currentDomain;
+      const item = document.createElement('div');
+      item.className = 'identity-card' + (isCurrentSite ? ' current-site' : '');
+      item.style.marginBottom = '8px';
+
+      item.innerHTML = `
+        <div class="identity-row">
+          <span class="identity-label">Site</span>
+          <div style="display:flex;align-items:center;gap:6px;overflow:hidden">
+            ${isCurrentSite ? '<span class="site-active-dot"></span>' : ''}
+            <span class="identity-value" style="color:#2dd4bf;word-break:break-all">${escHtml(domain)}</span>
+          </div>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Username</span>
+          <div class="identity-value-copy">
+            <span>${escHtml(identity.username || '—')}</span>
+            <button class="copy-btn" data-copy="${escAttr(identity.username || '')}">⧉</button>
+          </div>
+        </div>
+        <div class="identity-row">
+          <span class="identity-label">Email</span>
+          <div class="identity-value-copy">
+            <span>${escHtml(identity.alias_email || identity.email || '—')}</span>
+            <button class="copy-btn" data-copy="${escAttr(identity.alias_email || identity.email || '')}">⧉</button>
+          </div>
+        </div>
+        <div class="identity-row" style="justify-content:flex-end">
+          <button class="delete-site-btn" data-domain="${escAttr(domain)}">🗑 Delete</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+
+    // Copy buttons
+    list.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.copy;
+        if (text) navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!'));
+      });
+    });
+
+    // Delete buttons
+    list.querySelectorAll('.delete-site-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const domain = btn.dataset.domain;
+        const r = await chrome.storage.local.get('websiteIdentities');
+        const ids = r.websiteIdentities || {};
+        delete ids[domain];
+        await chrome.storage.local.set({ websiteIdentities: ids });
+        showToast(`✓ Deleted identity for ${domain}`);
+        loadWebsiteIdentities(); // refresh
+      });
+    });
+
+  } catch (e) {
+    empty.classList.remove('hidden');
+    empty.innerHTML = '<p>⚠️ Failed to load identities</p>';
+  }
+}
+
+// ── Init Main View ────────────────────────────────────────
 function initMainView() {
   initTabs();
   initCopyButtons();
 }
 
-// ── Entrypoint ──────────────────────────────────────────
-
+// ── Entrypoint ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
   tryAutoLogin();
@@ -354,209 +440,18 @@ document.addEventListener('DOMContentLoaded', () => {
     openWebApp(token ? `/dashboard?ext_token=${token}` : '/dashboard');
   });
 
+  // Inbox
+  $('btn-refresh-inbox').addEventListener('click', loadInbox);
   $('link-inbox').addEventListener('click', async () => {
     const token = await getToken();
     openWebApp(token ? `/inbox?ext_token=${token}` : '/inbox');
   });
 
-  // Inbox
-  $('btn-refresh-inbox').addEventListener('click', loadInbox);
-  
   // Detector
   $('btn-detect').addEventListener('click', detectText);
   $('link-detector').addEventListener('click', () => openWebApp('/detector'));
+
+  // Sites
+  $('btn-refresh-identities').addEventListener('click', loadWebsiteIdentities);
+  $('link-identities').addEventListener('click', () => openWebApp('/dashboard'));
 });
-// Add these functions to popup.js
-
-// ── Website Identities Management ──
-async function loadWebsiteIdentities() {
-  const list = document.getElementById('identities-list');
-  const empty = document.getElementById('identities-empty');
-  
-  if (!list) return;
-  
-  list.innerHTML = '';
-  empty.classList.add('hidden');
-  
-  try {
-    const { websiteIdentities } = await chrome.storage.local.get('websiteIdentities');
-    const identities = websiteIdentities || {};
-    const entries = Object.entries(identities);
-    
-    if (entries.length === 0) {
-      empty.classList.remove('hidden');
-      return;
-    }
-    
-    entries.forEach(([domain, identity]) => {
-      const item = document.createElement('div');
-      item.className = 'identity-card';
-      item.style.marginBottom = '8px';
-      item.innerHTML = `
-        <div class="identity-row">
-          <span class="identity-label">Site</span>
-          <span class="identity-value" style="color:#2dd4bf">${escapeHtml(domain)}</span>
-        </div>
-        <div class="identity-row">
-          <span class="identity-label">Username</span>
-          <div class="identity-value-copy">
-            <span>${escapeHtml(identity.username)}</span>
-            <button class="copy-btn" data-copy="${escapeAttr(identity.username)}">⧉</button>
-          </div>
-        </div>
-        <div class="identity-row">
-          <span class="identity-label">Email</span>
-          <div class="identity-value-copy">
-            <span>${escapeHtml(identity.alias_email || identity.email || '—')}</span>
-            <button class="copy-btn" data-copy="${escapeAttr(identity.alias_email || identity.email || '')}">⧉</button>
-          </div>
-        </div>
-        <div class="identity-row">
-          <span class="identity-label">Created</span>
-          <span class="identity-value">${identity.created_at ? new Date(identity.created_at).toLocaleDateString() : '—'}</span>
-        </div>
-      `;
-      list.appendChild(item);
-    });
-    
-    // Add copy functionality to new buttons
-    document.querySelectorAll('#identities-list .copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const text = btn.dataset.copy;
-        if (text && text !== '—') {
-          navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!'));
-        }
-      });
-    });
-    
-  } catch (e) {
-    console.error('Failed to load identities:', e);
-    empty.classList.remove('hidden');
-    empty.innerHTML = '<p>⚠️ Failed to load identities</p>';
-  }
-}
-
-// Add to initMainView function:
-// loadWebsiteIdentities();
-
-// Add to tab click handler in initTabs:
-// if (name === 'identities') loadWebsiteIdentities();
-
-// Add event listener for refresh button:
-// const refreshBtn = document.getElementById('btn-refresh-identities');
-// if (refreshBtn) refreshBtn.addEventListener('click', loadWebsiteIdentities);
-// ── Website Identities Management ──
-async function loadWebsiteIdentities() {
-  const list = document.getElementById('identities-list');
-  const empty = document.getElementById('identities-empty');
-  
-  if (!list) return;
-  
-  list.innerHTML = '';
-  if (empty) empty.classList.add('hidden');
-  
-  try {
-    const result = await chrome.storage.local.get('websiteIdentities');
-    const identities = result.websiteIdentities || {};
-    const entries = Object.entries(identities);
-    
-    if (entries.length === 0) {
-      if (empty) empty.classList.remove('hidden');
-      return;
-    }
-    
-    entries.forEach(([domain, identity]) => {
-      const item = document.createElement('div');
-      item.className = 'identity-card';
-      item.style.marginBottom = '8px';
-      item.innerHTML = `
-        <div class="identity-row">
-          <span class="identity-label">Site</span>
-          <span class="identity-value" style="color: var(--accent-secondary); word-break: break-all;">${escapeHtml(domain)}</span>
-        </div>
-        <div class="identity-row">
-          <span class="identity-label">Username</span>
-          <div class="identity-value-copy">
-            <span>${escapeHtml(identity.username || '—')}</span>
-            <button class="copy-btn" data-copy="${escapeAttr(identity.username || '')}">⧉</button>
-          </div>
-        </div>
-        <div class="identity-row">
-          <span class="identity-label">Email</span>
-          <div class="identity-value-copy">
-            <span>${escapeHtml(identity.alias_email || identity.email || '—')}</span>
-            <button class="copy-btn" data-copy="${escapeAttr(identity.alias_email || identity.email || '')}">⧉</button>
-          </div>
-        </div>
-      `;
-      list.appendChild(item);
-    });
-    
-    // Add copy functionality to new buttons
-    document.querySelectorAll('#identities-list .copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const text = btn.dataset.copy;
-        if (text && text !== '—' && text !== '') {
-          navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!'));
-        }
-      });
-    });
-    
-  } catch (e) {
-    console.error('Failed to load identities:', e);
-    if (empty) {
-      empty.classList.remove('hidden');
-      empty.innerHTML = '<p>⚠️ Failed to load identities</p>';
-    }
-  }
-}
-
-// Helper functions
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function escapeAttr(str) {
-  if (!str) return '';
-  return String(str).replace(/["']/g, '&quot;');
-}
-
-// Update initTabs to include identities tab
-function initTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const name = tab.dataset.tab;
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => {
-        c.classList.remove('active');
-        c.classList.add('hidden');
-      });
-      tab.classList.add('active');
-      const content = document.getElementById('tab-' + name);
-      if (content) {
-        content.classList.remove('hidden');
-        content.classList.add('active');
-      }
-
-      if (name === 'inbox') loadInbox();
-      if (name === 'identities') loadWebsiteIdentities();
-    });
-  });
-}
-
-// Add refresh button listener (add to DOMContentLoaded)
-// After other event listeners, add:
-const refreshIdentitiesBtn = document.getElementById('btn-refresh-identities');
-if (refreshIdentitiesBtn) {
-  refreshIdentitiesBtn.addEventListener('click', loadWebsiteIdentities);
-}
-
-const linkIdentities = document.getElementById('link-identities');
-if (linkIdentities) {
-  linkIdentities.addEventListener('click', () => openWebApp('/identities'));
-}

@@ -11,6 +11,7 @@
 </head>
 <body>
   <div id="app">
+
     <!-- Login Screen -->
     <div id="screen-login" class="screen active">
       <div class="grid-bg"></div>
@@ -40,8 +41,9 @@
       <a class="open-webapp-link" id="link-register" href="#">no account? register →</a>
     </div>
 
-    <!-- Main Shell (shown after login) -->
+    <!-- Main Shell -->
     <div id="screen-main" class="screen hidden">
+
       <!-- Top Bar -->
       <div class="topbar">
         <div class="topbar-brand">
@@ -58,7 +60,7 @@
         </div>
       </div>
 
-      <!-- Tab Bar -->
+      <!-- Tab Bar — all 4 tabs inside screen-main -->
       <div class="tabbar">
         <button class="tab active" data-tab="identity">
           <span class="tab-icon">🪪</span>
@@ -71,6 +73,10 @@
         <button class="tab" data-tab="detector">
           <span class="tab-icon">🤖</span>
           <span>Detector</span>
+        </button>
+        <button class="tab" data-tab="identities">
+          <span class="tab-icon">🔗</span>
+          <span>Sites</span>
         </button>
       </div>
 
@@ -155,27 +161,29 @@
           <a class="open-webapp-link" id="link-detector">Open full detector →</a>
         </div>
       </div>
-    </div>
-<!-- Add this as a new tab button in tabbar -->
-<button class="tab" data-tab="identities">
-  <span class="tab-icon">🔗</span>
-  <span>Sites</span>
-</button>
 
-<!-- Add this new tab content -->
-<div id="tab-identities" class="tab-content hidden">
-  <div class="section-header">
-    <h2>Website Identities</h2>
-    <button class="btn-sm" id="btn-refresh-identities">↻</button>
-  </div>
-  <div id="identities-list"></div>
-  <div id="identities-empty" class="empty-state">
-    <p>No saved identities yet.<br>Generate identities on websites to see them here.</p>
-  </div>
-  <div class="section-footer">
-    <a class="open-webapp-link" id="link-identities">Manage all identities →</a>
-  </div>
-</div>
+      <!-- Tab: Website Identities -->
+      <div id="tab-identities" class="tab-content hidden">
+        <div class="section-header">
+          <h2>Website Identities</h2>
+          <button class="btn-sm" id="btn-refresh-identities">↻</button>
+        </div>
+        <!-- Current site banner — shown when on a known site -->
+        <div id="current-site-banner" class="current-site-banner hidden">
+          <span class="current-site-dot"></span>
+          <span id="current-site-label">You're on <strong id="current-site-domain"></strong></span>
+        </div>
+        <div id="identities-list"></div>
+        <div id="identities-empty" class="empty-state hidden">
+          <p>No saved identities yet.<br>Right-click any page → <em>"Generate Identity for this site"</em></p>
+        </div>
+        <div class="section-footer">
+          <a class="open-webapp-link" id="link-identities">Manage all identities →</a>
+        </div>
+      </div>
+
+    </div><!-- /screen-main -->
+
     <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
   </div>

@@ -16,10 +16,11 @@
       "128": "icons/icon128.png"
     }
   },
-  "permissions": [
-    "storage",
-    "activeTab"
-  ],
+  "background": {
+  "service_worker": "background.js"
+},
+"permissions": ["storage", "activeTab", "contextMenus", "scripting", "tabs"],
+
   "host_permissions": [
     "http://localhost:8000/*"
   ],
