@@ -47,5 +47,26 @@ def simulate_messages(count: int = 10):
 @router.get("/spam-by-identity")
 def spam_by_identity():
     results = run_simulation(20)
-    spam_messages = [r for r in results if r["is_spam"]]
-    return {"spam_messages": spam_messages}
+
+    # Use sender as the identity key
+    identity_map = {}
+    for r in results:
+        sender = r.get("sender", "unknown")
+        if sender not in identity_map:
+            identity_map[sender] = {
+                "username": sender.split("@")[0],   # e.g. "rahul.sharma"
+                "email":    sender,                  # full email as alias
+                "spam_count": 0,
+                "risk_status": "safe",
+            }
+        if r.get("is_spam"):
+            identity_map[sender]["spam_count"] += 1
+
+        # Escalate risk level (safe → moderate → high, never downgrade)
+        incoming = r.get("risk_badge", "safe")
+        current  = identity_map[sender]["risk_status"]
+        rank = {"safe": 0, "moderate": 1, "high": 2}
+        if rank.get(incoming, 0) > rank.get(current, 0):
+            identity_map[sender]["risk_status"] = incoming
+
+    return list(identity_map.values())  # plain array

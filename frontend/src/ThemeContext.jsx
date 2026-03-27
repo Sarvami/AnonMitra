@@ -34,17 +34,17 @@ export const darkTheme = {
 }
 
 export const lightTheme = {
-  bg:        '#f5f3ff',
+  bg:        '#f0eeff',           // slightly purple-tinted white
   card:      '#ffffff',
-  border:    'rgba(139,92,246,0.25)',
-  input:     'rgba(139,92,246,0.06)',
-  text:      '#1e1b4b',
-  muted:     '#6d28d9',
-  faint:     '#a78bfa',
-  blue:      '#7c3aed',
+  border:    'rgba(109,40,217,0.2)',
+  input:     'rgba(109,40,217,0.07)',
+  text:      '#1a1035',           // near-black with purple tint — was too light
+  muted:     '#5b21b6',           // strong purple — was too faint
+  faint:     '#7c3aed',           // visible purple — was nearly invisible
+  blue:      '#6d28d9',
   green:     '#0d9488',
-  yellow:    '#d97706',
-  red:       '#e11d48',
+  yellow:    '#b45309',           // darker gold — was washed out on white
+  red:       '#be123c',           // darker red — was too bright/thin
   teal:      '#0d9488',
-  glow:      'rgba(139,92,246,0.08)',
+  glow:      'rgba(109,40,217,0.1)',
 }

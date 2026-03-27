@@ -23,7 +23,7 @@ export default function MessageCard({ message }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
         <span style={{
           fontFamily: "'Share Tech Mono', monospace",
-          color: '#ede9fe', fontSize: '12px',
+          color: theme.text, fontSize: '12px',
           letterSpacing: '0.3px', fontWeight: '600',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
