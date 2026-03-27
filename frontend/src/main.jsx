@@ -12,10 +12,18 @@ import Inbox from './pages/Inbox'
 import Detector from './pages/Detector'
 import Analytics from './pages/Analytics'
 import Profile from './pages/Profile'
+// Paste this at the top of App.jsx or main.jsx
 
+const params = new URLSearchParams(window.location.search);
+const extToken = params.get('ext_token');
+if (extToken) {
+  localStorage.setItem('token', extToken);
+  window.history.replaceState({}, '', window.location.pathname);
+}
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token')
-  return token ? children : <Navigate to="/login" />
+  if (!token) return <Navigate to="/login" replace />
+  return children
 }
 
 function App() {

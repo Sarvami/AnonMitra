@@ -55,7 +55,7 @@ export default function Detector() {
 
   const tabs = [
     { id: 'text',  label: 'TEXT_SCAN' },
-    { id: 'image', label: 'IMG_SCAN' },
+    { id: 'image', label: 'IMG_SCAN'  },
   ]
 
   return (
@@ -81,11 +81,10 @@ export default function Detector() {
               AI Content Detector
             </h2>
             <p style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              color: theme.faint, fontSize: '11px',
-              marginTop: '6px', letterSpacing: '1px',
+              fontFamily: "'Inter', sans-serif",
+              color: theme.muted, fontSize: '13px', marginTop: '6px',
             }}>
-              // detect whether content is ai-generated or human-made
+              Detect whether content is AI-generated or human-made
             </p>
           </div>
 
@@ -99,7 +98,7 @@ export default function Detector() {
                   background: activeTab === tab.id ? 'rgba(139,92,246,0.15)' : theme.card,
                   border: `1px solid ${activeTab === tab.id ? 'rgba(139,92,246,0.5)' : theme.border}`,
                   borderRadius: '6px', padding: '8px 20px',
-                  color: activeTab === tab.id ? theme.blue : theme.faint,
+                  color: activeTab === tab.id ? theme.blue : theme.muted,
                   cursor: 'pointer', fontSize: '11px', letterSpacing: '2px',
                   fontFamily: "'Share Tech Mono', monospace",
                   transition: 'all 0.15s ease',
@@ -117,16 +116,16 @@ export default function Detector() {
             boxShadow: `0 0 24px ${theme.glow}`,
           }}>
 
-            {/* Text Tab */}
+            {/* ── Text Tab ── */}
             {activeTab === 'text' && (
               <>
-                <div style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '10px', color: theme.faint,
-                  letterSpacing: '2px', marginBottom: '12px',
+                <p style={{
+                  fontFamily: "'Inter', sans-serif",
+                  color: theme.muted, fontSize: '13px', marginBottom: '12px',
                 }}>
-                  // paste any text or article below
-                </div>
+                  Paste any text or article below to analyze it
+                </p>
+
                 <textarea
                   style={{
                     width: '100%', background: theme.input,
@@ -134,17 +133,18 @@ export default function Detector() {
                     borderRadius: '8px', padding: '14px',
                     color: theme.text, fontSize: '13px',
                     resize: 'vertical', outline: 'none',
-                    fontFamily: "'Share Tech Mono', monospace",
+                    fontFamily: "'Inter', sans-serif",
                     lineHeight: '1.7', boxSizing: 'border-box',
                     transition: 'border-color 0.2s',
                   }}
                   rows={10}
-                  placeholder="// paste a news article, blog post, or any text here..."
+                  placeholder="Paste a news article, essay, or any text here..."
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onFocus={e => e.target.style.borderColor = 'rgba(139,92,246,0.55)'}
-                  onBlur={e => e.target.style.borderColor = theme.border}
+                  onBlur={e  => e.target.style.borderColor = theme.border}
                 />
+
                 <button
                   onClick={handleTextDetect}
                   disabled={textLoading || !text.trim()}
@@ -166,23 +166,21 @@ export default function Detector() {
                     verdict={textResult.result}
                     confidence={textResult.confidence}
                     explanation={textResult.explanation}
-                    isPercent={false}
                     theme={theme}
                   />
                 )}
               </>
             )}
 
-            {/* Image Tab */}
+            {/* ── Image Tab ── */}
             {activeTab === 'image' && (
               <>
-                <div style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '10px', color: theme.faint,
-                  letterSpacing: '2px', marginBottom: '12px',
+                <p style={{
+                  fontFamily: "'Inter', sans-serif",
+                  color: theme.muted, fontSize: '13px', marginBottom: '12px',
                 }}>
-                  // upload an image to check if it's ai-generated
-                </div>
+                  Upload an image to check if it was AI-generated
+                </p>
 
                 <label style={{ display: 'block', cursor: 'pointer', borderRadius: '8px', overflow: 'hidden' }}>
                   <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
@@ -196,12 +194,13 @@ export default function Detector() {
                       }}
                     />
                   ) : (
-                    <div style={{
-                      background: theme.input,
-                      border: `2px dashed rgba(139,92,246,0.25)`,
-                      borderRadius: '8px', padding: '48px',
-                      textAlign: 'center', transition: 'border-color 0.2s',
-                    }}
+                    <div
+                      style={{
+                        background: theme.input,
+                        border: `2px dashed rgba(139,92,246,0.25)`,
+                        borderRadius: '8px', padding: '48px',
+                        textAlign: 'center', transition: 'border-color 0.2s',
+                      }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.5)'}
                       onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)'}
                     >
@@ -213,11 +212,10 @@ export default function Detector() {
                         CLICK TO UPLOAD
                       </div>
                       <div style={{
-                        fontFamily: "'Share Tech Mono', monospace",
-                        color: theme.faint, fontSize: '10px',
-                        marginTop: '6px', letterSpacing: '1px',
+                        fontFamily: "'Inter', sans-serif",
+                        color: theme.muted, fontSize: '12px', marginTop: '6px',
                       }}>
-                        // png, jpg, webp supported
+                        PNG, JPG, WEBP supported
                       </div>
                     </div>
                   )}
@@ -242,12 +240,10 @@ export default function Detector() {
 
                 {imageError && <ErrorBanner msg={imageError} theme={theme} />}
                 {imageResult && (
-                  // ── FIX 1: use correct image result field names ──
                   <ResultCard
-                    verdict={imageResult.is_ai_generated ? 'ai' : 'human'}
+                    verdict={imageResult.result}
                     confidence={imageResult.confidence}
-                    explanation={`Risk level: ${imageResult.risk_level} — ${imageResult.verdict}`}
-                    isPercent={true}
+                    explanation={imageResult.explanation}
                     theme={theme}
                   />
                 )}
@@ -273,12 +269,9 @@ function ErrorBanner({ msg, theme }) {
   )
 }
 
-function ResultCard({ verdict, confidence, explanation, isPercent, theme }) {
+function ResultCard({ verdict, confidence, explanation, theme }) {
   const isAI = verdict?.toLowerCase().includes('ai')
-  // ── FIX 2: image backend sends % directly, text sends 0-1 float ──
-  const confidencePct = isPercent
-    ? Math.round(confidence || 0)
-    : Math.round((confidence || 0) * 100)
+  const confidencePct = Math.round((confidence || 0) * 100)
   const accentColor = isAI ? theme.red : theme.teal
 
   return (
@@ -287,6 +280,7 @@ function ResultCard({ verdict, confidence, explanation, isPercent, theme }) {
       background: accentColor + '0d',
       borderRadius: '10px', padding: '20px', marginTop: '20px',
     }}>
+
       {/* Verdict row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
         <div style={{
@@ -308,7 +302,7 @@ function ResultCard({ verdict, confidence, explanation, isPercent, theme }) {
           </div>
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
-            color: theme.faint, fontSize: '11px',
+            color: theme.muted, fontSize: '11px',
             marginTop: '3px', letterSpacing: '1px',
           }}>
             confidence: {confidencePct}%
@@ -329,16 +323,16 @@ function ResultCard({ verdict, confidence, explanation, isPercent, theme }) {
         }} />
       </div>
 
-      {/* Explanation */}
+      {/* Explanation — plain Inter text, no // prefix, theme-aware color */}
       {explanation && (
         <div style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          color: theme.faint, fontSize: '11px',
-          lineHeight: '1.8', letterSpacing: '0.3px',
+          fontFamily: "'Inter', sans-serif",
+          color: theme.muted,
+          fontSize: '13px', lineHeight: '1.7',
           borderTop: `1px solid ${theme.border}`,
           paddingTop: '12px',
         }}>
-          // {explanation}
+          {explanation}
         </div>
       )}
     </div>

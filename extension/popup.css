@@ -817,3 +817,20 @@ body.light .toast {
   from { opacity: 0; transform: translateX(-50%) translateY(8px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+.delete-site-btn {
+  background: rgba(255, 92, 110, 0.1) !important;
+  border: 1px solid rgba(255, 92, 110, 0.5) !important;
+  color: #ff5c6e !important;
+  border-radius: 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.delete-site-btn:hover {
+  background: rgba(255, 92, 110, 0.25) !important;
+  border-color: #ff5c6e !important;
+  box-shadow: 0 0 8px rgba(255, 92, 110, 0.3);
+}
