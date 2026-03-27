@@ -1,38 +1,42 @@
 import os
-import base64
 from PIL import Image
+from transformers import pipeline
 
-def encode_image(image_path: str) -> str:
-    with open(image_path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
+# ✅ Load once at module level
+ai_image_detector = pipeline(
+    "image-classification",
+    model="umm-maybe/AI-image-detector"
+)
 
 def detect_ai_image(image_path: str) -> dict:
     try:
-        from transformers import pipeline
-
-        detector = pipeline(
-            "image-classification",
-            model="Organika/sdxl-detector"
-        )
-
         image = Image.open(image_path).convert("RGB")
-        results = detector(image)
+        results = ai_image_detector(image)
+
+        # ✅ Print all labels so you can verify in terminal
+        print("Raw model output:", results)
 
         ai_score = 0.0
         human_score = 0.0
 
         for result in results:
             label = result["label"].lower()
-            print(f"Label: {label}, Score: {result['score']}")
-            if "artificial" in label or "sdxl" in label or "fake" in label or "generated" in label:
+            if "ai" in label or "fake" in label or "artificial" in label:
                 ai_score = result["score"]
-            else:
+            elif "human" in label or "real" in label:
                 human_score = result["score"]
 
-        is_ai = ai_score > human_score
-        confidence = round(max(ai_score, human_score), 2)
+        # ✅ Fallback — if neither label matched, log it
+        if ai_score == 0.0 and human_score == 0.0:
+            return {
+                "error": "Unexpected labels from model",
+                "raw_output": results
+            }
 
-        if is_ai and confidence > 0.8:
+        is_ai = ai_score < human_score
+        confidence = round(max(ai_score, human_score) * 100, 2)
+
+        if is_ai and ai_score > 0.8:
             risk = "high"
         elif is_ai:
             risk = "moderate"
