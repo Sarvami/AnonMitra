@@ -80,10 +80,7 @@ export default function Detector() {
             <h2 style={{ color: theme.text, fontSize: '1.5rem', fontWeight: '700', margin: 0, fontFamily: "'Inter', sans-serif" }}>
               AI Content Detector
             </h2>
-            <p style={{
-              fontFamily: "'Inter', sans-serif",
-              color: theme.muted, fontSize: '13px', marginTop: '6px',
-            }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '13px', marginTop: '6px' }}>
               Detect whether content is AI-generated or human-made
             </p>
           </div>
@@ -119,13 +116,9 @@ export default function Detector() {
             {/* ── Text Tab ── */}
             {activeTab === 'text' && (
               <>
-                <p style={{
-                  fontFamily: "'Inter', sans-serif",
-                  color: theme.muted, fontSize: '13px', marginBottom: '12px',
-                }}>
+                <p style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '13px', marginBottom: '12px' }}>
                   Paste any text or article below to analyze it
                 </p>
-
                 <textarea
                   style={{
                     width: '100%', background: theme.input,
@@ -144,7 +137,6 @@ export default function Detector() {
                   onFocus={e => e.target.style.borderColor = 'rgba(139,92,246,0.55)'}
                   onBlur={e  => e.target.style.borderColor = theme.border}
                 />
-
                 <button
                   onClick={handleTextDetect}
                   disabled={textLoading || !text.trim()}
@@ -153,19 +145,18 @@ export default function Detector() {
                     color: '#fff', border: 'none', borderRadius: '6px',
                     padding: '10px 24px', fontSize: '12px', letterSpacing: '2px',
                     cursor: 'pointer', marginTop: '14px',
-                    fontFamily: "'Share Tech Mono', monospace",
-                    display: 'block',
+                    fontFamily: "'Share Tech Mono', monospace", display: 'block',
                   }}
                 >
                   {textLoading ? 'SCANNING...' : 'RUN_SCAN →'}
                 </button>
-
                 {textError && <ErrorBanner msg={textError} theme={theme} />}
                 {textResult && (
                   <ResultCard
                     verdict={textResult.result}
                     confidence={textResult.confidence}
                     explanation={textResult.explanation}
+                    type="text"
                     theme={theme}
                   />
                 )}
@@ -175,13 +166,9 @@ export default function Detector() {
             {/* ── Image Tab ── */}
             {activeTab === 'image' && (
               <>
-                <p style={{
-                  fontFamily: "'Inter', sans-serif",
-                  color: theme.muted, fontSize: '13px', marginBottom: '12px',
-                }}>
+                <p style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '13px', marginBottom: '12px' }}>
                   Upload an image to check if it was AI-generated
                 </p>
-
                 <label style={{ display: 'block', cursor: 'pointer', borderRadius: '8px', overflow: 'hidden' }}>
                   <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                   {imagePreview ? (
@@ -205,22 +192,15 @@ export default function Detector() {
                       onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)'}
                     >
                       <div style={{ fontSize: '2.5rem', marginBottom: '12px', opacity: 0.5 }}>📁</div>
-                      <div style={{
-                        fontFamily: "'Share Tech Mono', monospace",
-                        color: theme.blue, fontSize: '12px', letterSpacing: '1.5px',
-                      }}>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.blue, fontSize: '12px', letterSpacing: '1.5px' }}>
                         CLICK TO UPLOAD
                       </div>
-                      <div style={{
-                        fontFamily: "'Inter', sans-serif",
-                        color: theme.muted, fontSize: '12px', marginTop: '6px',
-                      }}>
+                      <div style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '12px', marginTop: '6px' }}>
                         PNG, JPG, WEBP supported
                       </div>
                     </div>
                   )}
                 </label>
-
                 {image && (
                   <button
                     onClick={handleImageDetect}
@@ -230,20 +210,20 @@ export default function Detector() {
                       color: '#fff', border: 'none', borderRadius: '6px',
                       padding: '10px 24px', fontSize: '12px', letterSpacing: '2px',
                       cursor: 'pointer', marginTop: '14px',
-                      fontFamily: "'Share Tech Mono', monospace",
-                      display: 'block',
+                      fontFamily: "'Share Tech Mono', monospace", display: 'block',
                     }}
                   >
                     {imageLoading ? 'SCANNING...' : 'RUN_SCAN →'}
                   </button>
                 )}
-
                 {imageError && <ErrorBanner msg={imageError} theme={theme} />}
+                {/* FIX: was using textResult instead of imageResult */}
                 {imageResult && (
                   <ResultCard
                     verdict={imageResult.result}
                     confidence={imageResult.confidence}
                     explanation={imageResult.explanation}
+                    type="image"
                     theme={theme}
                   />
                 )}
@@ -269,10 +249,19 @@ function ErrorBanner({ msg, theme }) {
   )
 }
 
-function ResultCard({ verdict, confidence, explanation, theme }) {
-  const isAI = verdict?.toLowerCase().includes('ai')
-  const confidencePct = Math.round((confidence || 0) * 100)
+function ResultCard({ verdict, confidence, explanation, type, theme }) {
+  const isAI = (verdict || '').toLowerCase().includes('ai')
   const accentColor = isAI ? theme.red : theme.teal
+
+  const confidencePct = type === 'text'
+    ? Math.round(confidence || 0)
+    : Math.round((confidence || 0) * 100)
+
+  const verdictLabel = isAI
+    ? 'AI_GENERATED'
+    : type === 'image' ? 'HUMAN_GENERATED' : 'HUMAN_WRITTEN'
+
+  const icon = isAI ? '🤖' : type === 'image' ? '🖼️' : '👤'
 
   return (
     <div style={{
@@ -280,8 +269,6 @@ function ResultCard({ verdict, confidence, explanation, theme }) {
       background: accentColor + '0d',
       borderRadius: '10px', padding: '20px', marginTop: '20px',
     }}>
-
-      {/* Verdict row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
         <div style={{
           width: '44px', height: '44px', borderRadius: '8px',
@@ -290,7 +277,7 @@ function ResultCard({ verdict, confidence, explanation, theme }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.4rem', flexShrink: 0,
         }}>
-          {isAI ? '🤖' : '👤'}
+          {icon}
         </div>
         <div>
           <div style={{
@@ -298,7 +285,7 @@ function ResultCard({ verdict, confidence, explanation, theme }) {
             fontWeight: '700', fontSize: '14px',
             color: accentColor, letterSpacing: '1.5px',
           }}>
-            {isAI ? 'AI_GENERATED' : 'HUMAN_WRITTEN'}
+            {verdictLabel}
           </div>
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
@@ -323,14 +310,15 @@ function ResultCard({ verdict, confidence, explanation, theme }) {
         }} />
       </div>
 
-      {/* Explanation — plain Inter text, no // prefix, theme-aware color */}
+      {/* I have removed the "Model is X% confident..." text from here. 
+          The explanation section below will only show if the backend provides one. 
+      */}
+
       {explanation && (
         <div style={{
           fontFamily: "'Inter', sans-serif",
-          color: theme.muted,
-          fontSize: '13px', lineHeight: '1.7',
-          borderTop: `1px solid ${theme.border}`,
-          paddingTop: '12px',
+          color: theme.muted, fontSize: '13px', lineHeight: '1.7',
+          borderTop: `1px solid ${theme.border}`, paddingTop: '12px',
         }}>
           {explanation}
         </div>
