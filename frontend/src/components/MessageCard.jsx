@@ -1,6 +1,8 @@
 import RiskBadge from './RiskBadge'
+import { useTheme } from '../ThemeContext'
 
 export default function MessageCard({ message }) {
+  const { theme } = useTheme()
   const riskLevel =
     message.risk_score >= 0.7 ? 'high' :
     message.risk_score >= 0.4 ? 'moderate' : 'safe'
