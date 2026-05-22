@@ -8,3 +8,6 @@ const authHeader = () => ({
 
 export const getMessages = (identityId) =>
   axios.get(`${API}/messages/${identityId}`, authHeader())
+
+export const toggleSpam = (messageId) =>
+  axios.post(`${API}/messages/${messageId}/toggle-spam`, {}, authHeader())

@@ -164,6 +164,7 @@ Frontend runs at `http://localhost:5173`
 | GET | `/api/messages/{identity_id}` | Get messages for identity |
 | POST | `/api/messages/simulate` | Fire fake spam campaign |
 | GET | `/api/messages/` | Get recent messages (for extension) |
+| POST | `/api/messages/{id}/toggle-spam` | Toggle spam status & retrain model |
 
 ### Detector
 | Method | Endpoint | Description |

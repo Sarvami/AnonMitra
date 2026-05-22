@@ -43,6 +43,12 @@ export default function Inbox() {
     }
   }
 
+  const handleToggleSpam = (updatedMessage) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m))
+    )
+  }
+
   const spamCount  = messages.filter(m => m.is_spam).length
   const cleanCount = messages.filter(m => !m.is_spam).length
   const selectedIdentity = identities.find(i => i.id === selectedId)
@@ -204,7 +210,7 @@ export default function Inbox() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {messages.map((message) => (
-                    <MessageCard key={message.id} message={message} />
+                    <MessageCard key={message.id} message={message} onToggleSpam={handleToggleSpam} />
                   ))}
                 </div>
               )}

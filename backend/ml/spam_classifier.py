@@ -122,27 +122,55 @@ TRAINING_DATA = [
     ("Thank you for your purchase! Your receipt is attached.", 0),
 ]
 
-def train_model():
+import os
+import joblib
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(CURRENT_DIR, 'spam_model.pkl')
+
+def train_model(db_session=None):
     texts = [t for t, _ in TRAINING_DATA]
     labels = [l for _, l in TRAINING_DATA]
     
+    # If a database session is provided, query user messages to train on real data
+    if db_session:
+        try:
+            from models import Message
+            db_messages = db_session.query(Message).all()
+            for msg in db_messages:
+                texts.append(msg.body)
+                labels.append(1 if msg.is_spam else 0)
+        except Exception as e:
+            print("Failed to query DB messages for training:", e)
+    else:
+        # Try self-contained connection if no session is provided
+        try:
+            from database import SessionLocal
+            from models import Message
+            db = SessionLocal()
+            db_messages = db.query(Message).all()
+            for msg in db_messages:
+                texts.append(msg.body)
+                labels.append(1 if msg.is_spam else 0)
+            db.close()
+        except Exception as e:
+            print("Could not initialize local DB session for training:", e)
+            
     model = Pipeline([
         ('tfidf', TfidfVectorizer()),
         ('clf', MultinomialNB())
     ])
     
     model.fit(texts, labels)
-    joblib.dump(model, 'ml/spam_model.pkl')
-    print("Model trained and saved!")
+    joblib.dump(model, MODEL_PATH)
+    print(f"Model trained and saved to {MODEL_PATH}!")
     return model
 
 def predict_spam(text: str) -> dict:
-    model_path = 'ml/spam_model.pkl'
-    
-    if not os.path.exists(model_path):
+    if not os.path.exists(MODEL_PATH):
         model = train_model()
     else:
-        model = joblib.load(model_path)
+        model = joblib.load(MODEL_PATH)
     
     prediction = model.predict([text])[0]
     probability = model.predict_proba([text])[0]
@@ -160,3 +188,4 @@ def predict_spam(text: str) -> dict:
         "confidence": confidence,
         "risk_badge": badge
     }
+

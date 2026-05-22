@@ -322,5 +322,54 @@ def get_recent_messages(limit: int = 8, db: Session = Depends(get_db), current_u
         }
         for m in messages
     ]
+
+@router.post("/{message_id}/toggle-spam", status_code=status.HTTP_200_OK)
+def toggle_spam_status(
+    message_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """
+    POST /api/messages/{message_id}/toggle-spam
+    Toggle is_spam status of a message, update its risk score,
+    recalculate the identity risk badge, and retrain the ML model.
+    """
+    message = (
+        db.query(models.Message)
+        .filter(models.Message.id == message_id)
+        .first()
+    )
+    if not message:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Message not found.",
+        )
+        
+    # Verify ownership of the message
+    _verify_identity_ownership(message.identity_id, current_user.id, db)
+    
+    # Toggle spam status
+    message.is_spam = not message.is_spam
+    # Update risk score accordingly
+    if message.is_spam:
+        message.risk_score = 0.85
+    else:
+        message.risk_score = 0.05
+        
+    db.commit()
+    db.refresh(message)
+    
+    # Recalculate and update the identity's risk badge
+    _update_risk_badge(message.identity_id, db)
+    
+    # Retrain the ML model dynamically with the new data
+    try:
+        from ml.spam_classifier import train_model
+        train_model(db)
+    except Exception as e:
+        print("Failed to retrain model:", e)
+        
+    return _serialize_message(message)
+
     
 
