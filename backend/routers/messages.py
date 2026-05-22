@@ -20,6 +20,13 @@ class SimulateRequest(BaseModel):
     identity_id: str  # which identity receives the fake spam message
 
 
+class CustomSimulateRequest(BaseModel):
+    identity_id: str
+    sender: str
+    subject: str
+    body: str
+
+
 # ── Spam simulation data ──────────────────────────────────────────────────────
 
 FAKE_SENDERS = [
@@ -269,6 +276,68 @@ def simulate_clean(
     _update_risk_badge(payload.identity_id, db)
 
     return _serialize_message(clean_message)
+
+
+@router.post("/simulate-custom", status_code=status.HTTP_201_CREATED)
+def simulate_custom(
+    payload:      CustomSimulateRequest,
+    db:           Session               = Depends(get_db),
+    current_user: models.User           = Depends(get_current_user),
+):
+    """
+    POST /api/messages/simulate-custom
+    Classify a user-provided message (sender, subject, body) and persist it
+    to the chosen identity so it appears in the inbox with a real risk score.
+    """
+    _verify_identity_ownership(payload.identity_id, current_user.id, db)
+
+    from ml.spam_classifier import check_spam_rules, predict_spam
+
+    # Run both classification layers on the user-supplied body
+    rules_result = check_spam_rules(payload.subject + " " + payload.body)
+    ml_result    = predict_spam(payload.subject + " " + payload.body)
+
+    # Combine: take the higher risk score of the two
+    risk_score = max(rules_result["risk_score"], ml_result["confidence"] if ml_result["is_spam"] else ml_result["confidence"] * 0.3)
+    risk_score = round(min(risk_score, 1.0), 4)
+    is_spam    = rules_result["is_spam"] or ml_result["is_spam"]
+
+    message = models.Message(
+        id          = str(uuid.uuid4()),
+        identity_id = payload.identity_id,
+        sender      = payload.sender,
+        subject     = payload.subject,
+        body        = payload.body,
+        risk_score  = risk_score,
+        is_spam     = is_spam,
+        is_read     = False,
+        received_at = datetime.utcnow(),
+    )
+
+    db.add(message)
+    db.commit()
+    db.refresh(message)
+
+    _update_risk_badge(payload.identity_id, db)
+
+    return {
+        **_serialize_message(message),
+        "classification": {
+            "rules": {
+                "is_spam":         rules_result["is_spam"],
+                "risk_score":      rules_result["risk_score"],
+                "risk_badge":      rules_result["risk_badge"],
+                "matched_keywords": rules_result["matched_keywords"],
+            },
+            "ml": {
+                "is_spam":    ml_result["is_spam"],
+                "confidence": ml_result["confidence"],
+                "risk_badge": ml_result["risk_badge"],
+            },
+            "final_risk_score": risk_score,
+            "final_is_spam":    is_spam,
+        }
+    }
 
 
 @router.patch("/{message_id}/read", status_code=status.HTTP_200_OK)

@@ -39,7 +39,7 @@ def detect_text(request: TextRequest):
         elif is_ai:
             confidence_label = "moderate"
         else:
-            confidence_label = "low"
+            confidence_label = "safe"
 
         return {
             "result": verdict,

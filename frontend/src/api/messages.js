@@ -10,4 +10,7 @@ export const getMessages = (identityId) =>
   axios.get(`${API}/messages/${identityId}`, authHeader())
 
 export const toggleSpam = (messageId) =>
-  axios.post(`${API}/messages/${messageId}/toggle-spam`, {}, authHeader())
+  axios.post(`${API}/messages/${messageId}/toggle-spam`, {}, authHeader())
+
+export const simulateCustom = (payload) =>
+  axios.post(`${API}/messages/simulate-custom`, payload, authHeader())
