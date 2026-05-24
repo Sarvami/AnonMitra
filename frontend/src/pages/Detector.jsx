@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Navbar from '../components/Navbar'
+import Spinner from '../components/Spinner'
 import { detectText, detectImage } from '../api/detector'
 import { useTheme } from '../ThemeContext'
 import PageWrapper from '../components/PageWrapper'
@@ -54,8 +55,8 @@ export default function Detector() {
   }
 
   const tabs = [
-    { id: 'text',  label: 'TEXT_SCAN' },
-    { id: 'image', label: 'IMG_SCAN'  },
+    { id: 'text',  label: 'TEXT_SCAN',  icon: '📄' },
+    { id: 'image', label: 'IMG_SCAN',   icon: '🖼️' },
   ]
 
   return (
@@ -64,7 +65,7 @@ export default function Detector() {
         <div className="grid-bg" style={{ position: 'fixed', inset: 0, opacity: 0.4, pointerEvents: 'none' }} />
         <Navbar />
 
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '32px 24px', width: '100%', position: 'relative' }}>
+        <div style={{ maxWidth: '820px', margin: '0 auto', padding: '32px 24px', width: '100%', position: 'relative' }}>
 
           {/* Page header */}
           <div style={{ marginBottom: '28px' }}>
@@ -80,9 +81,12 @@ export default function Detector() {
             <h2 style={{ color: theme.text, fontSize: '1.5rem', fontWeight: '700', margin: 0, fontFamily: "'Inter', sans-serif" }}>
               AI Content Detector
             </h2>
-            <p style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '13px', marginTop: '6px' }}>
-              Detect whether content is AI-generated or human-made
-            </p>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              color: theme.faint, fontSize: '11px', marginTop: '4px', letterSpacing: '1px',
+            }}>
+              // detect whether content is AI-generated or human-made
+            </div>
           </div>
 
           {/* Tabs */}
@@ -95,12 +99,14 @@ export default function Detector() {
                   background: activeTab === tab.id ? 'rgba(139,92,246,0.15)' : theme.card,
                   border: `1px solid ${activeTab === tab.id ? 'rgba(139,92,246,0.5)' : theme.border}`,
                   borderRadius: '6px', padding: '8px 20px',
-                  color: activeTab === tab.id ? theme.blue : theme.muted,
+                  color: activeTab === tab.id ? '#8b5cf6' : theme.muted,
                   cursor: 'pointer', fontSize: '11px', letterSpacing: '2px',
                   fontFamily: "'Share Tech Mono', monospace",
                   transition: 'all 0.15s ease',
+                  display: 'flex', alignItems: 'center', gap: '7px',
                 }}
               >
+                <span>{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
@@ -111,14 +117,23 @@ export default function Detector() {
             background: theme.card, border: `1px solid ${theme.border}`,
             borderRadius: '12px', padding: '28px',
             boxShadow: `0 0 24px ${theme.glow}`,
+            position: 'relative', overflow: 'hidden',
           }}>
+            {/* Top accent */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+              background: 'linear-gradient(90deg, #7c3aed, #0d9488)',
+            }} />
 
             {/* ── Text Tab ── */}
             {activeTab === 'text' && (
               <>
-                <p style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '13px', marginBottom: '12px' }}>
-                  Paste any text or article below to analyze it
-                </p>
+                <div style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  color: theme.faint, fontSize: '11px', marginBottom: '14px', letterSpacing: '0.5px',
+                }}>
+                  // paste any text or article below to analyze it
+                </div>
                 <textarea
                   style={{
                     width: '100%', background: theme.input,
@@ -140,17 +155,24 @@ export default function Detector() {
                 <button
                   onClick={handleTextDetect}
                   disabled={textLoading || !text.trim()}
+                  className="btn-glow"
                   style={{
-                    background: 'linear-gradient(135deg, #7c3aed, #0d9488)',
+                    background: textLoading || !text.trim()
+                      ? 'rgba(139,92,246,0.2)'
+                      : 'linear-gradient(135deg, #7c3aed, #0d9488)',
                     color: '#fff', border: 'none', borderRadius: '6px',
-                    padding: '10px 24px', fontSize: '12px', letterSpacing: '2px',
-                    cursor: 'pointer', marginTop: '14px',
-                    fontFamily: "'Share Tech Mono', monospace", display: 'block',
+                    padding: '10px 24px', fontSize: '11px', letterSpacing: '2px',
+                    cursor: textLoading || !text.trim() ? 'not-allowed' : 'pointer',
+                    marginTop: '14px',
+                    fontFamily: "'Share Tech Mono', monospace",
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    opacity: !text.trim() ? 0.5 : 1,
                   }}
                 >
+                  {textLoading && <Spinner size={14} />}
                   {textLoading ? 'SCANNING...' : 'RUN_SCAN →'}
                 </button>
-                {textError && <ErrorBanner msg={textError} theme={theme} />}
+                {textError && <ErrorBanner msg={textError} />}
                 {textResult && (
                   <ResultCard
                     verdict={textResult.result}
@@ -166,9 +188,12 @@ export default function Detector() {
             {/* ── Image Tab ── */}
             {activeTab === 'image' && (
               <>
-                <p style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '13px', marginBottom: '12px' }}>
-                  Upload an image to check if it was AI-generated
-                </p>
+                <div style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  color: theme.faint, fontSize: '11px', marginBottom: '14px', letterSpacing: '0.5px',
+                }}>
+                  // upload an image to check if it was AI-generated
+                </div>
                 <label style={{ display: 'block', cursor: 'pointer', borderRadius: '8px', overflow: 'hidden' }}>
                   <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                   {imagePreview ? (
@@ -185,18 +210,24 @@ export default function Detector() {
                       style={{
                         background: theme.input,
                         border: `2px dashed rgba(139,92,246,0.25)`,
-                        borderRadius: '8px', padding: '48px',
+                        borderRadius: '8px', padding: '52px',
                         textAlign: 'center', transition: 'border-color 0.2s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.5)'}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.55)'}
                       onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)'}
                     >
-                      <div style={{ fontSize: '2.5rem', marginBottom: '12px', opacity: 0.5 }}>📁</div>
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.blue, fontSize: '12px', letterSpacing: '1.5px' }}>
-                        CLICK TO UPLOAD
+                      <div style={{ fontSize: '2.5rem', marginBottom: '12px', opacity: 0.45 }}>📁</div>
+                      <div style={{
+                        fontFamily: "'Share Tech Mono', monospace",
+                        color: '#8b5cf6', fontSize: '12px', letterSpacing: '2px',
+                      }}>
+                        CLICK_TO_UPLOAD
                       </div>
-                      <div style={{ fontFamily: "'Inter', sans-serif", color: theme.muted, fontSize: '12px', marginTop: '6px' }}>
-                        PNG, JPG, WEBP supported
+                      <div style={{
+                        fontFamily: "'Share Tech Mono', monospace",
+                        color: theme.faint, fontSize: '10px', marginTop: '6px', letterSpacing: '1px',
+                      }}>
+                        // PNG, JPG, WEBP supported
                       </div>
                     </div>
                   )}
@@ -205,19 +236,24 @@ export default function Detector() {
                   <button
                     onClick={handleImageDetect}
                     disabled={imageLoading}
+                    className="btn-glow"
                     style={{
-                      background: 'linear-gradient(135deg, #7c3aed, #0d9488)',
+                      background: imageLoading
+                        ? 'rgba(139,92,246,0.2)'
+                        : 'linear-gradient(135deg, #7c3aed, #0d9488)',
                       color: '#fff', border: 'none', borderRadius: '6px',
-                      padding: '10px 24px', fontSize: '12px', letterSpacing: '2px',
-                      cursor: 'pointer', marginTop: '14px',
-                      fontFamily: "'Share Tech Mono', monospace", display: 'block',
+                      padding: '10px 24px', fontSize: '11px', letterSpacing: '2px',
+                      cursor: imageLoading ? 'not-allowed' : 'pointer',
+                      marginTop: '14px',
+                      fontFamily: "'Share Tech Mono', monospace",
+                      display: 'flex', alignItems: 'center', gap: '8px',
                     }}
                   >
+                    {imageLoading && <Spinner size={14} />}
                     {imageLoading ? 'SCANNING...' : 'RUN_SCAN →'}
                   </button>
                 )}
-                {imageError && <ErrorBanner msg={imageError} theme={theme} />}
-                {/* FIX: was using textResult instead of imageResult */}
+                {imageError && <ErrorBanner msg={imageError} />}
                 {imageResult && (
                   <ResultCard
                     verdict={imageResult.result}
@@ -236,12 +272,12 @@ export default function Detector() {
   )
 }
 
-function ErrorBanner({ msg, theme }) {
+function ErrorBanner({ msg }) {
   return (
     <div style={{
-      background: theme.red + '15', border: `1px solid ${theme.red}`,
-      color: theme.red, borderRadius: '6px', padding: '10px 14px',
-      marginTop: '14px', fontSize: '12px',
+      background: 'rgba(244,63,94,0.1)', border: `1px solid rgba(244,63,94,0.4)`,
+      color: '#f43f5e', borderRadius: '6px', padding: '10px 14px',
+      marginTop: '14px', fontSize: '11px',
       fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.5px',
     }}>
       ⚠ {msg}
@@ -251,7 +287,7 @@ function ErrorBanner({ msg, theme }) {
 
 function ResultCard({ verdict, confidence, explanation, type, theme }) {
   const isAI = (verdict || '').toLowerCase().includes('ai')
-  const accentColor = isAI ? theme.red : theme.teal
+  const accentColor = isAI ? '#f43f5e' : '#2dd4bf'
 
   const confidencePct = type === 'text'
     ? Math.round(confidence || 0)
@@ -268,14 +304,23 @@ function ResultCard({ verdict, confidence, explanation, type, theme }) {
       border: `1px solid ${accentColor}40`,
       background: accentColor + '0d',
       borderRadius: '10px', padding: '20px', marginTop: '20px',
+      position: 'relative', overflow: 'hidden',
     }}>
+      {/* Left accent bar */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, bottom: 0, width: '3px',
+        background: accentColor,
+        opacity: 0.7,
+      }} />
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
         <div style={{
-          width: '44px', height: '44px', borderRadius: '8px',
+          width: '46px', height: '46px', borderRadius: '8px',
           background: accentColor + '20',
           border: `1px solid ${accentColor}50`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.4rem', flexShrink: 0,
+          boxShadow: `0 0 12px ${accentColor}20`,
         }}>
           {icon}
         </div>
@@ -283,7 +328,7 @@ function ResultCard({ verdict, confidence, explanation, type, theme }) {
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontWeight: '700', fontSize: '14px',
-            color: accentColor, letterSpacing: '1.5px',
+            color: accentColor, letterSpacing: '2px',
           }}>
             {verdictLabel}
           </div>
@@ -292,7 +337,7 @@ function ResultCard({ verdict, confidence, explanation, type, theme }) {
             color: theme.muted, fontSize: '11px',
             marginTop: '3px', letterSpacing: '1px',
           }}>
-            confidence: {confidencePct}%
+            // confidence: {confidencePct}%
           </div>
         </div>
       </div>
@@ -309,10 +354,6 @@ function ResultCard({ verdict, confidence, explanation, type, theme }) {
           transition: 'width 0.6s ease',
         }} />
       </div>
-
-      {/* I have removed the "Model is X% confident..." text from here. 
-          The explanation section below will only show if the backend provides one. 
-      */}
 
       {explanation && (
         <div style={{

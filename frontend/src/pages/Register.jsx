@@ -3,14 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import { register } from '../api/auth'
 import { useTheme } from '../ThemeContext'
 
-// Fix <option> background — inline styles don't work on <option> tags in browsers
 const optionStyle = `
   select option {
     background: #1a1528 !important;
     color: #ede9fe !important;
-  }
-  select:focus option {
-    background: #1a1528 !important;
   }
 `
 
@@ -70,7 +66,6 @@ export default function Register() {
       justifyContent: 'center', padding: '32px 16px',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Inject option styles — only way to style <option> tags */}
       <style>{optionStyle}</style>
 
       {/* Grid bg */}
@@ -78,7 +73,7 @@ export default function Register() {
 
       {/* Glow orb */}
       <div style={{
-        position: 'absolute', width: '500px', height: '500px',
+        position: 'absolute', width: '600px', height: '600px',
         borderRadius: '50%',
         background: `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)`,
         top: '50%', left: '50%',
@@ -99,13 +94,26 @@ export default function Register() {
       <div style={{
         position: 'relative', background: theme.card,
         border: `1px solid ${theme.border}`, borderRadius: '14px',
-        padding: '40px', width: '100%', maxWidth: '460px',
+        padding: '40px', width: '100%', maxWidth: '480px',
         boxShadow: `0 0 40px ${theme.glow}`,
+        overflow: 'hidden',
       }}>
+        {/* Top accent line */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+          background: 'linear-gradient(90deg, #7c3aed, #0d9488)',
+        }} />
+
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '2.2rem', marginBottom: '12px', filter: 'drop-shadow(0 0 12px rgba(139,92,246,0.5))' }}>🛡️</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '2px', marginBottom: '8px' }}>
+          <div style={{
+            fontSize: '2.2rem', marginBottom: '12px',
+            filter: 'drop-shadow(0 0 12px rgba(139,92,246,0.5))',
+          }}>🛡️</div>
+          <div style={{
+            display: 'flex', alignItems: 'baseline',
+            justifyContent: 'center', gap: '2px', marginBottom: '8px',
+          }}>
             <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '26px', color: theme.text }}>Anon</span>
             <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '24px', fontWeight: '800', color: theme.teal }}>मित्र</span>
           </div>
@@ -114,17 +122,17 @@ export default function Register() {
             fontSize: '10px', color: theme.faint,
             letterSpacing: '3px', textTransform: 'uppercase',
           }}>
-            <span style={{ color: 'rgba(45,212,191,0.35)' }}>[ </span>
+            <span style={{ color: 'rgba(45,212,191,0.4)' }}>[ </span>
             create new identity
-            <span style={{ color: 'rgba(45,212,191,0.35)' }}> ]</span>
+            <span style={{ color: 'rgba(45,212,191,0.4)' }}> ]</span>
           </div>
         </div>
 
         {error && (
           <div style={{
-            background: theme.red + '15', border: `1px solid ${theme.red}`,
-            color: theme.red, borderRadius: '6px', padding: '10px 12px',
-            marginBottom: '20px', fontSize: '12px',
+            background: 'rgba(244,63,94,0.1)', border: `1px solid rgba(244,63,94,0.4)`,
+            color: '#f43f5e', borderRadius: '6px', padding: '10px 14px',
+            marginBottom: '20px', fontSize: '11px',
             fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.5px',
           }}>
             ⚠ {error}
@@ -143,7 +151,9 @@ export default function Register() {
 
           {/* Email */}
           <div>
-            <label style={labelStyle}>Email <span style={{ color: theme.red }}>*</span></label>
+            <label style={labelStyle}>
+              Email <span style={{ color: '#f43f5e' }}>*</span>
+            </label>
             <input style={inputStyle} type="email" placeholder="user@domain.com"
               value={form.email} onChange={update('email')} required
               onFocus={onFocus} onBlur={onBlur} />
@@ -151,7 +161,9 @@ export default function Register() {
 
           {/* Password */}
           <div>
-            <label style={labelStyle}>Password <span style={{ color: theme.red }}>*</span></label>
+            <label style={labelStyle}>
+              Password <span style={{ color: '#f43f5e' }}>*</span>
+            </label>
             <input style={inputStyle} type="password" placeholder="min. 8 characters"
               value={form.password} onChange={update('password')} required
               onFocus={onFocus} onBlur={onBlur} />
@@ -167,7 +179,8 @@ export default function Register() {
             </div>
             <div>
               <label style={labelStyle}>Date of Birth</label>
-              <input style={{ ...inputStyle, colorScheme: isDark ? 'dark' : 'light' }}
+              <input
+                style={{ ...inputStyle, colorScheme: isDark ? 'dark' : 'light' }}
                 type="date" value={form.dob} onChange={update('dob')}
                 onFocus={onFocus} onBlur={onBlur} />
             </div>
@@ -180,9 +193,9 @@ export default function Register() {
               style={{
                 ...inputStyle,
                 cursor: 'pointer',
-                background: '#1a1528',   /* dark bg for the select box itself */
-                color: '#ede9fe',        /* always light text */
-                colorScheme: 'dark',     /* tells browser to use dark scrollbar/chrome */
+                background: '#1a1528',
+                color: '#ede9fe',
+                colorScheme: 'dark',
               }}
               value={form.country} onChange={update('country')}
               onFocus={onFocus} onBlur={onBlur}
@@ -204,27 +217,35 @@ export default function Register() {
 
           <button
             type="submit" disabled={loading}
+            className="btn-glow"
             style={{
               width: '100%',
-              background: 'linear-gradient(135deg, #7c3aed, #0d9488)',
+              background: loading
+                ? 'rgba(139,92,246,0.3)'
+                : 'linear-gradient(135deg, #7c3aed, #0d9488)',
               border: 'none', borderRadius: '6px',
-              padding: '11px', color: '#fff',
-              fontSize: '13px', letterSpacing: '2px',
-              cursor: 'pointer', marginTop: '4px',
+              padding: '12px', color: '#fff',
+              fontSize: '12px', letterSpacing: '2.5px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              marginTop: '6px',
               fontFamily: "'Share Tech Mono', monospace",
+              transition: 'opacity 0.2s',
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'INITIALIZING...' : 'CREATE_ACCOUNT →'}
+            {loading ? '// INITIALIZING...' : 'CREATE_ACCOUNT →'}
           </button>
         </form>
 
         <div style={{
-          textAlign: 'center', marginTop: '20px',
+          textAlign: 'center', marginTop: '22px',
           fontFamily: "'Share Tech Mono', monospace",
           fontSize: '11px', color: theme.faint, letterSpacing: '1px',
         }}>
-          already registered?{' '}
-          <Link to="/login" style={{ color: theme.blue, textDecoration: 'none' }}>sign in →</Link>
+          // already registered?{' '}
+          <Link to="/login" style={{ color: theme.teal, textDecoration: 'none' }}>
+            sign_in →
+          </Link>
         </div>
       </div>
     </div>

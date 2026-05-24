@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import MessageCard from '../components/MessageCard'
 import PageWrapper from '../components/PageWrapper'
+import Spinner from '../components/Spinner'
 import { getIdentities } from '../api/identities'
 import { getMessages, simulateCustom } from '../api/messages'
 import { useTheme } from '../ThemeContext'
@@ -15,7 +16,6 @@ export default function Inbox() {
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [error, setError] = useState('')
 
-  // Simulate form state
   const [simOpen, setSimOpen] = useState(false)
   const [simForm, setSimForm] = useState({ sender: '', subject: '', body: '' })
   const [simLoading, setSimLoading] = useState(false)
@@ -51,9 +51,7 @@ export default function Inbox() {
   }
 
   const handleToggleSpam = (updatedMessage) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m))
-    )
+    setMessages(prev => prev.map(m => m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m))
   }
 
   const handleSimulate = async (e) => {
@@ -70,8 +68,7 @@ export default function Inbox() {
         body:    simForm.body,
       })
       setSimResult(res.data)
-      // Prepend the new message into the list
-      setMessages((prev) => [res.data, ...prev])
+      setMessages(prev => [res.data, ...prev])
       setSimForm({ sender: '', subject: '', body: '' })
     } catch (err) {
       setSimError(err?.response?.data?.detail || 'Simulation failed')
@@ -90,7 +87,11 @@ export default function Inbox() {
         <div className="grid-bg" style={{ position: 'fixed', inset: 0, opacity: 0.4, pointerEvents: 'none' }} />
         <Navbar />
 
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
+        <div style={{
+          maxWidth: '1100px', margin: '0 auto',
+          padding: '32px 24px', width: '100%',
+          boxSizing: 'border-box', position: 'relative',
+        }}>
 
           {/* Page header */}
           <div style={{ marginBottom: '24px' }}>
@@ -103,29 +104,38 @@ export default function Inbox() {
               message centre
               <span style={{ color: 'rgba(45,212,191,0.4)' }}> ]</span>
             </div>
-            <h2 style={{ color: theme.text, fontSize: '1.5rem', fontWeight: '700', margin: 0, fontFamily: "'Inter', sans-serif" }}>
+            <h2 style={{
+              color: theme.text, fontSize: '1.5rem', fontWeight: '700',
+              margin: 0, fontFamily: "'Inter', sans-serif",
+            }}>
               Inbox
             </h2>
           </div>
 
           {error && (
             <div style={{
-              background: theme.red + '15', border: `1px solid ${theme.red}`,
-              color: theme.red, borderRadius: '6px', padding: '10px 14px',
-              marginBottom: '20px', fontSize: '12px',
+              background: 'rgba(244,63,94,0.1)', border: `1px solid rgba(244,63,94,0.4)`,
+              color: '#f43f5e', borderRadius: '6px', padding: '10px 14px',
+              marginBottom: '20px', fontSize: '11px',
               fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.5px',
             }}>
               ⚠ {error}
             </div>
           )}
 
-          {/* ── Simulate Message Panel ─────────────────────────────────── */}
+          {/* ── Simulate Message Panel ── */}
           <div style={{
             background: theme.card, border: `1px solid ${theme.border}`,
             borderRadius: '10px', marginBottom: '16px',
             boxShadow: `0 0 16px ${theme.glow}`, overflow: 'hidden',
+            position: 'relative',
           }}>
-            {/* Toggle header */}
+            {/* Top accent */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+              background: 'linear-gradient(90deg, #7c3aed, #0d9488)',
+            }} />
+
             <button
               onClick={() => { setSimOpen(o => !o); setSimResult(null); setSimError('') }}
               style={{
@@ -171,20 +181,10 @@ export default function Inbox() {
                 ) : (
                   <form onSubmit={handleSimulate} style={{ paddingTop: '16px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                      <SimField
-                        label="SENDER"
-                        placeholder="attacker@phish.io"
-                        value={simForm.sender}
-                        onChange={v => setSimForm(f => ({ ...f, sender: v }))}
-                        theme={theme}
-                      />
-                      <SimField
-                        label="SUBJECT"
-                        placeholder="You've won a prize!"
-                        value={simForm.subject}
-                        onChange={v => setSimForm(f => ({ ...f, subject: v }))}
-                        theme={theme}
-                      />
+                      <SimField label="SENDER"  placeholder="attacker@phish.io"
+                        value={simForm.sender}  onChange={v => setSimForm(f => ({ ...f, sender: v }))}  theme={theme} />
+                      <SimField label="SUBJECT" placeholder="You've won a prize!"
+                        value={simForm.subject} onChange={v => setSimForm(f => ({ ...f, subject: v }))} theme={theme} />
                     </div>
                     <SimField
                       label="BODY"
@@ -198,16 +198,14 @@ export default function Inbox() {
                     {simError && (
                       <div style={{
                         fontFamily: "'Share Tech Mono', monospace",
-                        color: theme.red, fontSize: '11px', letterSpacing: '0.5px',
+                        color: '#f43f5e', fontSize: '11px', letterSpacing: '0.5px',
                         marginTop: '10px',
                       }}>
                         ⚠ {simError}
                       </div>
                     )}
 
-                    {simResult && (
-                      <SimResultPanel result={simResult} theme={theme} />
-                    )}
+                    {simResult && <SimResultPanel result={simResult} theme={theme} />}
 
                     <button
                       type="submit"
@@ -225,8 +223,10 @@ export default function Inbox() {
                         letterSpacing: '1.5px',
                         opacity: (!simForm.sender.trim() || !simForm.body.trim()) ? 0.4 : 1,
                         transition: 'all 0.15s ease',
+                        display: 'flex', alignItems: 'center', gap: '8px',
                       }}
                     >
+                      {simLoading && <Spinner size={14} />}
                       {simLoading ? 'CLASSIFYING...' : 'RUN_SIMULATION →'}
                     </button>
                   </form>
@@ -235,37 +235,45 @@ export default function Inbox() {
             )}
           </div>
 
-          <div className="sidebar-layout" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '16px', alignItems: 'start' }}>
+          {/* ── Main layout ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '16px', alignItems: 'start' }}>
 
             {/* Sidebar */}
             <div style={{
               background: theme.card, border: `1px solid ${theme.border}`,
               borderRadius: '10px', padding: '16px',
               boxShadow: `0 0 16px ${theme.glow}`,
+              position: 'relative', overflow: 'hidden',
             }}>
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+                background: 'linear-gradient(90deg, #7c3aed, #0d9488)',
+              }} />
               <div style={{
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: '9px', letterSpacing: '2.5px',
                 textTransform: 'uppercase', color: theme.faint,
                 marginBottom: '14px', paddingBottom: '10px',
                 borderBottom: `1px solid ${theme.border}`,
+                marginTop: '4px',
               }}>
                 // identities
               </div>
 
               {loadingIdentities ? (
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '11px', letterSpacing: '1px' }}>
-                  loading...
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
+                  <Spinner size={24} />
                 </div>
               ) : identities.length === 0 ? (
                 <div style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '11px' }}>
-                  no identities found
+                  // no identities found
                 </div>
               ) : (
                 identities.map((identity) => (
                   <div
                     key={identity.id}
                     onClick={() => setSelectedId(identity.id)}
+                    className="card-hover"
                     style={{
                       padding: '10px 12px', borderRadius: '6px', marginBottom: '6px', cursor: 'pointer',
                       border: `1px solid ${selectedId === identity.id ? 'rgba(139,92,246,0.45)' : 'transparent'}`,
@@ -297,13 +305,19 @@ export default function Inbox() {
               background: theme.card, border: `1px solid ${theme.border}`,
               borderRadius: '10px', padding: '20px', minHeight: '420px',
               boxShadow: `0 0 16px ${theme.glow}`,
+              position: 'relative', overflow: 'hidden',
             }}>
-              {/* Panel header */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+                background: 'linear-gradient(90deg, #7c3aed, #0d9488)',
+              }} />
+
               {selectedIdentity && (
                 <div style={{
                   display: 'flex', justifyContent: 'space-between',
                   alignItems: 'center', paddingBottom: '16px',
                   borderBottom: `1px solid ${theme.border}`, marginBottom: '20px',
+                  marginTop: '4px',
                 }}>
                   <div>
                     <span style={{
@@ -328,7 +342,7 @@ export default function Inbox() {
                     </span>
                     <span style={{
                       fontFamily: "'Share Tech Mono', monospace",
-                      color: theme.red, fontSize: '11px', letterSpacing: '1px',
+                      color: '#f43f5e', fontSize: '11px', letterSpacing: '1px',
                     }}>
                       ⚠ {spamCount} spam
                     </span>
@@ -337,16 +351,12 @@ export default function Inbox() {
               )}
 
               {loadingMessages ? (
-                <div style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  color: theme.faint, fontSize: '11px',
-                  letterSpacing: '2px', paddingTop: '20px',
-                }}>
-                  LOADING MESSAGES...
+                <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '40px' }}>
+                  <Spinner size={28} />
                 </div>
               ) : messages.length === 0 ? (
                 <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '16px', opacity: 0.4 }}>📭</div>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '16px', opacity: 0.35 }}>📭</div>
                   <div style={{
                     fontFamily: "'Share Tech Mono', monospace",
                     color: theme.faint, fontSize: '12px', letterSpacing: '2px',
@@ -362,7 +372,6 @@ export default function Inbox() {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </div>
@@ -384,6 +393,7 @@ function SimField({ label, placeholder, value, onChange, theme, multiline = fals
     outline: 'none',
     boxSizing: 'border-box',
     resize: multiline ? 'vertical' : undefined,
+    transition: 'border-color 0.2s',
   }
   return (
     <div>
@@ -397,18 +407,18 @@ function SimField({ label, placeholder, value, onChange, theme, multiline = fals
       </div>
       {multiline ? (
         <textarea
-          rows={3}
-          placeholder={placeholder}
-          value={value}
+          rows={3} placeholder={placeholder} value={value}
           onChange={e => onChange(e.target.value)}
+          onFocus={e => e.target.style.borderColor = 'rgba(139,92,246,0.55)'}
+          onBlur={e  => e.target.style.borderColor = theme.border}
           style={base}
         />
       ) : (
         <input
-          type="text"
-          placeholder={placeholder}
-          value={value}
+          type="text" placeholder={placeholder} value={value}
           onChange={e => onChange(e.target.value)}
+          onFocus={e => e.target.style.borderColor = 'rgba(139,92,246,0.55)'}
+          onBlur={e  => e.target.style.borderColor = theme.border}
           style={base}
         />
       )}
@@ -419,12 +429,12 @@ function SimField({ label, placeholder, value, onChange, theme, multiline = fals
 function SimResultPanel({ result, theme }) {
   const c = result.classification
   const isSpam = c.final_is_spam
-  const accentColor = isSpam ? theme.red : theme.teal
+  const accentColor = isSpam ? '#f43f5e' : '#2dd4bf'
 
   const badgeColor = {
-    high:     theme.red,
-    moderate: theme.yellow,
-    safe:     theme.teal,
+    high:     '#f43f5e',
+    moderate: '#f59e0b',
+    safe:     '#2dd4bf',
   }
 
   return (
@@ -435,24 +445,19 @@ function SimResultPanel({ result, theme }) {
       borderRadius: '8px',
       padding: '14px 16px',
     }}>
-      {/* Verdict */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
         <span style={{ fontSize: '16px' }}>{isSpam ? '⚠' : '✓'}</span>
         <span style={{
           fontFamily: "'Share Tech Mono', monospace",
           color: accentColor, fontSize: '13px', fontWeight: '700', letterSpacing: '1px',
         }}>
-          {isSpam ? 'SPAM DETECTED' : 'CLEAN MESSAGE'}
+          {isSpam ? 'SPAM_DETECTED' : 'CLEAN_MESSAGE'}
         </span>
-        <span style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          color: theme.faint, fontSize: '10px',
-        }}>
-          risk score: <span style={{ color: accentColor }}>{(c.final_risk_score * 100).toFixed(1)}%</span>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '10px' }}>
+          // risk: <span style={{ color: accentColor }}>{(c.final_risk_score * 100).toFixed(1)}%</span>
         </span>
       </div>
 
-      {/* Two-column breakdown */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         {/* Rules layer */}
         <div style={{
@@ -469,7 +474,7 @@ function SimResultPanel({ result, theme }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <span style={{
               fontFamily: "'Share Tech Mono', monospace",
-              color: badgeColor[c.rules.risk_badge] || theme.teal,
+              color: badgeColor[c.rules.risk_badge] || '#2dd4bf',
               fontSize: '11px', letterSpacing: '1px',
             }}>
               {c.rules.risk_badge?.toUpperCase()}
@@ -483,7 +488,7 @@ function SimResultPanel({ result, theme }) {
               {c.rules.matched_keywords.map(kw => (
                 <span key={kw} style={{
                   fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '9px', color: theme.red,
+                  fontSize: '9px', color: '#f43f5e',
                   background: 'rgba(244,63,94,0.1)',
                   border: '1px solid rgba(244,63,94,0.25)',
                   borderRadius: '3px', padding: '1px 6px',
@@ -494,7 +499,7 @@ function SimResultPanel({ result, theme }) {
             </div>
           ) : (
             <span style={{ fontFamily: "'Share Tech Mono', monospace", color: theme.faint, fontSize: '10px' }}>
-              no keywords matched
+              // no keywords matched
             </span>
           )}
         </div>
@@ -514,7 +519,7 @@ function SimResultPanel({ result, theme }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <span style={{
               fontFamily: "'Share Tech Mono', monospace",
-              color: badgeColor[c.ml.risk_badge] || theme.teal,
+              color: badgeColor[c.ml.risk_badge] || '#2dd4bf',
               fontSize: '11px', letterSpacing: '1px',
             }}>
               {c.ml.risk_badge?.toUpperCase()}
@@ -526,7 +531,7 @@ function SimResultPanel({ result, theme }) {
           <span style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '10px',
-            color: c.ml.is_spam ? theme.red : theme.teal,
+            color: c.ml.is_spam ? '#f43f5e' : '#2dd4bf',
           }}>
             {c.ml.is_spam ? '⚠ classified as spam' : '✓ classified as clean'}
           </span>

@@ -1,8 +1,4 @@
-import { useTheme } from '../ThemeContext'
-
 export default function Spinner({ size = 32 }) {
-  const { theme } = useTheme()
-
   return (
     <div style={{
       width: size,
@@ -13,7 +9,8 @@ export default function Spinner({ size = 32 }) {
       borderRight: `2px solid rgba(45,212,191,0.5)`,
       animation: 'spin 0.75s linear infinite',
       margin: '0 auto',
-      boxShadow: '0 0 8px rgba(139,92,246,0.2)',
+      boxShadow: '0 0 10px rgba(139,92,246,0.25)',
+      flexShrink: 0,
     }} />
   )
 }

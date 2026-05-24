@@ -9,7 +9,7 @@ export function useToast() {
     setToasts(prev => [...prev, { id, message, type }])
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id))
-    }, 3000)
+    }, 3500)
   }
 
   return { toasts, addToast }
@@ -19,10 +19,10 @@ export function ToastContainer({ toasts }) {
   const { theme } = useTheme()
 
   const typeConfig = {
-    success: { color: '#2dd4bf',  border: 'rgba(45,212,191,0.4)',  label: 'OK'   },
-    error:   { color: '#f43f5e',  border: 'rgba(244,63,94,0.4)',   label: 'ERR'  },
-    info:    { color: '#8b5cf6',  border: 'rgba(139,92,246,0.4)',  label: 'INF'  },
-    warning: { color: '#f59e0b',  border: 'rgba(245,158,11,0.4)',  label: 'WARN' },
+    success: { color: '#2dd4bf', border: 'rgba(45,212,191,0.4)',  label: '[ OK ]'   },
+    error:   { color: '#f43f5e', border: 'rgba(244,63,94,0.4)',   label: '[ ERR ]'  },
+    info:    { color: '#8b5cf6', border: 'rgba(139,92,246,0.4)',  label: '[ INF ]'  },
+    warning: { color: '#f59e0b', border: 'rgba(245,158,11,0.4)',  label: '[ WARN ]' },
   }
 
   return (
@@ -34,6 +34,7 @@ export function ToastContainer({ toasts }) {
       flexDirection: 'column',
       gap: '8px',
       zIndex: 99999,
+      pointerEvents: 'none',
     }}>
       {toasts.map(toast => {
         const c = typeConfig[toast.type] || typeConfig.success
@@ -47,21 +48,23 @@ export function ToastContainer({ toasts }) {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            minWidth: '260px',
-            maxWidth: '340px',
-            boxShadow: `0 8px 28px rgba(0,0,0,0.25), 0 0 12px ${c.color}18`,
+            minWidth: '280px',
+            maxWidth: '360px',
+            boxShadow: `0 8px 28px rgba(0,0,0,0.35), 0 0 16px ${c.color}18`,
             animation: 'slideIn 0.25s ease',
+            pointerEvents: 'auto',
           }}>
             {/* Type tag */}
             <span style={{
               fontFamily: "'Share Tech Mono', monospace",
-              fontSize: '8px', letterSpacing: '1.5px',
+              fontSize: '9px', letterSpacing: '1px',
               color: c.color,
               background: c.color + '15',
               border: `1px solid ${c.border}`,
               borderRadius: '3px',
               padding: '2px 6px',
               flexShrink: 0,
+              whiteSpace: 'nowrap',
             }}>
               {c.label}
             </span>
