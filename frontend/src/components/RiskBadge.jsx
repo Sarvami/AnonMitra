@@ -13,13 +13,14 @@ export default function RiskBadge({ level }) {
       background: badge.bg,
       border: `1px solid ${badge.border}`,
       borderRadius: '4px',
-      padding: '2px 9px',
+      padding: '3px 10px',
       fontSize: '9px',
-      letterSpacing: '1.5px',
+      letterSpacing: '2px',
       fontFamily: "'Share Tech Mono', monospace",
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '5px',
+      gap: '6px',
+      textTransform: 'uppercase',
     }}>
       <span style={{
         width: '5px', height: '5px', borderRadius: '50%',

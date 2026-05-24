@@ -89,3 +89,32 @@ a:hover { opacity: 0.8; }
     linear-gradient(90deg, rgba(139,92,246,0.06) 1px, transparent 1px);
   background-size: 36px 36px;
 }
+/* Smooth card hover */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(139,92,246,0.2);
+  border-color: rgba(139,92,246,0.4) !important;
+}
+
+/* Input focus glow */
+.input-glow:focus {
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.25);
+  border-color: rgba(139,92,246,0.6) !important;
+}
+
+/* Smooth theme transition */
+*, *::before, *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+}
+
+/* Glow button */
+.btn-glow {
+  box-shadow: 0 0 15px rgba(139,92,246,0.3);
+  transition: box-shadow 0.2s ease, transform 0.15s ease !important;
+}
+.btn-glow:hover {
+  box-shadow: 0 0 25px rgba(139,92,246,0.5) !important;
+}

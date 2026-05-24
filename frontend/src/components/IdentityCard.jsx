@@ -33,6 +33,7 @@ export default function IdentityCard({ identity, onDelete }) {
       )}
 
       <div
+        className="card-hover"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -43,7 +44,6 @@ export default function IdentityCard({ identity, onDelete }) {
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
-          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           boxShadow: hovered ? '0 0 18px rgba(139,92,246,0.12)' : 'none',
           position: 'relative',
           overflow: 'hidden',
@@ -116,7 +116,7 @@ export default function IdentityCard({ identity, onDelete }) {
             onClick={() => setShowConfirm(true)}
             style={{
               background: 'transparent',
-              border: `1px solid rgba(244,63,94,0.35)`,
+              border: '1px solid rgba(244,63,94,0.35)',
               color: '#f43f5e',
               borderRadius: '4px',
               padding: '3px 12px',
@@ -124,7 +124,6 @@ export default function IdentityCard({ identity, onDelete }) {
               fontSize: '9px',
               letterSpacing: '1.5px',
               fontFamily: "'Share Tech Mono', monospace",
-              transition: 'background 0.15s ease, border-color 0.15s ease',
             }}
             onMouseEnter={e => {
               e.target.style.background = 'rgba(244,63,94,0.1)'
@@ -156,7 +155,6 @@ function IconBtn({ onClick, title, theme, children }) {
         cursor: 'pointer',
         fontSize: '0.8rem',
         lineHeight: 1,
-        transition: 'border-color 0.15s ease',
       }}
       onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.45)'}
       onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.18)'}
