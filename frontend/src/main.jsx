@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 import { ThemeProvider } from './ThemeContext'
 import SplashScreen from './components/SplashScreen'
+import { setToken, getToken } from './api/api'
 
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -12,16 +13,18 @@ import Inbox from './pages/Inbox'
 import Detector from './pages/Detector'
 import Analytics from './pages/Analytics'
 import Profile from './pages/Profile'
-// Paste this at the top of App.jsx or main.jsx
 
-const params = new URLSearchParams(window.location.search);
-const extToken = params.get('ext_token');
+// Handle token passed via URL from Chrome extension
+const params = new URLSearchParams(window.location.search)
+const extToken = params.get('ext_token')
 if (extToken) {
-  localStorage.setItem('token', extToken);
-  window.history.replaceState({}, '', window.location.pathname);
+  setToken(extToken) // store in memory, not localStorage
+  window.history.replaceState({}, '', window.location.pathname)
 }
+
+// Private route — checks in-memory token
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token')
+  const token = getToken()
   if (!token) return <Navigate to="/login" replace />
   return children
 }

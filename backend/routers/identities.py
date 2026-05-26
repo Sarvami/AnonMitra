@@ -40,11 +40,6 @@ def get_all_identities(
     db:           Session      = Depends(get_db),
     current_user: models.User  = Depends(get_current_user),
 ):
-    """
-    GET /api/identities
-    Return all identities belonging to the logged-in user.
-    Stored values are decrypted before being returned.
-    """
     identities = (
         db.query(models.Identity)
         .filter(models.Identity.user_id == current_user.id)
@@ -60,12 +55,6 @@ def generate_new_identity(
     db:           Session         = Depends(get_db),
     current_user: models.User     = Depends(get_current_user),
 ):
-    """
-    POST /api/identities/generate
-    Generate a fresh random identity, encrypt it, save to DB.
-    Returns plain-text values so the user can copy their credentials.
-    Optionally pass { "platform": "shopping" } in the request body.
-    """
     raw = generate_identity()
 
     new_identity = models.Identity(
@@ -83,7 +72,6 @@ def generate_new_identity(
     db.commit()
     db.refresh(new_identity)
 
-    # Return plain-text so the user can see/copy their new credentials
     return {
         "id":          new_identity.id,
         "alias_email": raw["alias_email"],
@@ -103,8 +91,9 @@ def delete_identity(
 ):
     """
     DELETE /api/identities/{id}
-    Delete an identity and ALL its associated messages.
-    Only the owner can delete their own identities.
+    BUG FIX: Previously queried identity but never called db.delete() or db.commit().
+    Now properly deletes the identity — cascade="all, delete-orphan" in models.py
+    handles deleting all associated messages automatically.
     """
     identity = (
         db.query(models.Identity)
@@ -114,3 +103,14 @@ def delete_identity(
         )
         .first()
     )
+
+    if not identity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Identity not found or you do not have permission to delete it.",
+        )
+
+    db.delete(identity)  # CASCADE handles messages automatically via models.py
+    db.commit()
+
+    return {"message": "Identity deleted successfully."}

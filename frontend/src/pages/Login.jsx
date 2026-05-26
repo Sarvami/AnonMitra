@@ -15,8 +15,10 @@ export default function Login() {
     setLoading(true)
     setError('')
     try {
-      const res = await login(form)
-      localStorage.setItem('token', res.data.access_token)
+      // XSS FIX: login() in auth.js now calls setToken() which stores
+      // the token in memory only — NOT localStorage.
+      // The backend also sets an httpOnly cookie automatically.
+      await login(form)
       navigate('/dashboard')
     } catch (err) {
       const detail = err.response?.data?.detail

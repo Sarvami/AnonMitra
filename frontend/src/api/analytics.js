@@ -1,13 +1,16 @@
-import axios from 'axios'
-
-const API = 'http://localhost:8000/api'
-
-const authHeader = () => ({
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-})
+import apiClient from './api'
 
 export const getSummary = () =>
-  axios.get(`${API}/analytics/summary`, authHeader())
+  apiClient.get('/analytics/summary')
 
 export const getSpamByIdentity = () =>
-  axios.get(`${API}/analytics/spam-by-identity`, authHeader())
+  apiClient.get('/analytics/spam-by-identity')
+
+export const getRiskByPlatform = () =>
+  apiClient.get('/analytics/risk-by-platform')
+
+export const getSpamOverTime = () =>
+  apiClient.get('/analytics/spam-over-time')
+
+export const getDetectionHistory = () =>
+  apiClient.get('/analytics/detection-history')

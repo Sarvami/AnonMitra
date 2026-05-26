@@ -6,6 +6,7 @@ import Spinner from '../components/Spinner'
 import PageWrapper from '../components/PageWrapper'
 import { ToastContainer, useToast } from '../components/Toast'
 import { getIdentities, generateIdentity } from '../api/identities'
+import { getToken, clearToken } from '../api/api'
 import { useTheme } from '../ThemeContext'
 
 export default function Dashboard() {
@@ -22,7 +23,7 @@ export default function Dashboard() {
   const resetInactivityTimer = () => {
     clearTimeout(inactivityTimer.current)
     inactivityTimer.current = setTimeout(() => {
-      localStorage.removeItem('token')
+      clearToken() // XSS FIX: clear in-memory token instead of localStorage
       addToast('Session locked due to inactivity', 'warning')
       setTimeout(() => navigate('/login'), 1500)
     }, 10 * 60 * 1000) // 10 minutes
@@ -40,7 +41,7 @@ export default function Dashboard() {
 
   // ── WebSocket real-time notifications ─────────────────────
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = getToken() // XSS FIX: get from memory not localStorage
     if (!token) return
 
     let ws

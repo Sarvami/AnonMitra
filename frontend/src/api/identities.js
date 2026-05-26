@@ -1,16 +1,12 @@
-import axios from 'axios'
-
-const API = 'http://localhost:8000/api'
-
-const authHeader = () => ({
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-})
+import apiClient, { sanitize } from './api'
 
 export const getIdentities = () =>
-  axios.get(`${API}/identities`, authHeader())
+  apiClient.get('/identities/')
 
-export const generateIdentity = () =>
-  axios.post(`${API}/identities/generate`, {}, authHeader())
+export const generateIdentity = (platform) =>
+  apiClient.post('/identities/generate', {
+    platform: sanitize(platform) || 'general',
+  })
 
 export const deleteIdentity = (id) =>
-  axios.delete(`${API}/identities/${id}`, authHeader())
+  apiClient.delete(`/identities/${sanitize(id)}`)

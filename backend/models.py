@@ -13,7 +13,8 @@ class User(Base):
     email         = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
     created_at    = Column(DateTime, default=datetime.utcnow)
-    identities    = relationship("Identity", back_populates="user")
+    # CASCADE: deleting a user deletes all their identities
+    identities    = relationship("Identity", back_populates="user", cascade="all, delete-orphan")
 
 class Identity(Base):
     __tablename__ = "identities"
@@ -27,7 +28,8 @@ class Identity(Base):
     is_active   = Column(Boolean, default=True)
     created_at  = Column(DateTime, default=datetime.utcnow)
     user        = relationship("User", back_populates="identities")
-    messages    = relationship("Message", back_populates="identity")
+    # CASCADE: deleting an identity deletes all its messages
+    messages    = relationship("Message", back_populates="identity", cascade="all, delete-orphan")
 
 class Message(Base):
     __tablename__ = "messages"
